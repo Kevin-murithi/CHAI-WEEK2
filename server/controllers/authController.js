@@ -11,7 +11,6 @@ const handleErrors = (err) => {
         errors.email = 'That email is already registered'
         return errors
     }
-
     if (err.message === 'incorrect email') {
         errors.email = 'That email is not registered'
     }
@@ -28,25 +27,26 @@ const handleErrors = (err) => {
 }
 
 const maxAge = 3 * 24 * 60 * 60;
-const createToken = (id) => {
-    return jwt.sign({id}, 'kevin secret', {
+const createToken = (id, role) => {
+    return jwt.sign({id, role}, 'kevin secret', {
         expiresIn: maxAge
     })
 }
 
 module.exports.register = async(req, res) =>{
 
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, role } = req.body;
     try {
         const user = await User.create({
             email,
             password,
             firstName,
-            lastName
+            lastName,
+            role: ['farmer','lender'].includes(role) ? role : 'farmer'
         });
-        const token = createToken(user._id);
+        const token = createToken(user._id, user.role);
         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000, secure: false, sameSite: 'lax'});
-        res.status(201).json({user: user._id, token});
+        res.status(201).json({user: user._id, role: user.role, token});
         console.log(token);
     }
     catch (err) {
@@ -59,9 +59,9 @@ module.exports.login = async(req, res) =>{
     const { email, password} = req.body;
     try { 
         const user = await User.login(email, password);
-        const token = createToken(user._id);
+        const token = createToken(user._id, user.role);
         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000, secure: false, sameSite: 'lax'});
-        res.status(200).json({ user: user._id, token});
+        res.status(200).json({ user: user._id, role: user.role, token});
     }
     catch (err) {
         const errors = handleErrors(err);
@@ -95,9 +95,11 @@ module.exports.getCurrentUser = async (req, res) => {
                 email: user.email,
                 firstName: user.firstName,
                 lastName: user.lastName,
+                role: user.role,
                 createdAt: user.createdAt || null
             }
         });
+
     } catch (err) {
         console.error('Get current user error:', err.message);
         res.status(401).json({ error: 'Invalid token' });

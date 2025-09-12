@@ -24,9 +24,15 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please enter your last name'],
         trim: true
+    },
+    role: {
+        type: String,
+        enum: ['farmer', 'lender'],
+        default: 'farmer',
+        required: true
     }
 }, {
-    timestamps: true // This adds createdAt and updatedAt fields
+    timestamps: true
 });
 
 userSchema.post('save', function (doc, next){
