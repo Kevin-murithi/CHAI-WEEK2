@@ -3,6 +3,9 @@ import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import ClimaPanel from './components/ClimaPanel.jsx'
+import FarmerMap from './components/FarmerMap.jsx'
+import FarmerFields from './components/FarmerFields.jsx'
+import LenderConsole from './components/LenderConsole.jsx'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -126,7 +129,8 @@ function FarmerDashboard() {
     <div className="container">
       <h1>Farmer Dashboard</h1>
       <div className="muted">Welcome, {user?.firstName}. Get your field risk insights below.</div>
-      <ClimaPanel />
+      <FarmerMap />
+      <FarmerFields />
     </div>
   )
 }
@@ -136,8 +140,8 @@ function LenderDashboard() {
   return (
     <div className="container">
       <h1>Lender Dashboard</h1>
-      <div className="muted">Welcome, {user?.firstName}. Compare sources for due diligence.</div>
-      <ClimaPanel defaultCompare={true} />
+      <div className="muted">Welcome, {user?.firstName}. Manage your portfolio and review applications.</div>
+      <LenderConsole />
     </div>
   )
 }

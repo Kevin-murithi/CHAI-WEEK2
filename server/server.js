@@ -2,6 +2,8 @@ const express = require('express')
 const mongoose = require('mongoose');
 const authRoutes = require('./routes/authRoutes')
 const climaRoutes = require('./routes/climaRoutes')
+const farmerRoutes = require('./routes/farmerRoutes')
+const lenderRoutes = require('./routes/lenderRoutes')
 const { connectDB } = require('./config/db.js');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -27,6 +29,8 @@ app.use(authRoutes);
 // Require a valid session for ClimaScore and any future protected routes
 app.use(requireRole());
 app.use(climaRoutes);
+app.use('/api/farmer', farmerRoutes);
+app.use('/api/lender', lenderRoutes);
 app.get('/check-auth', checkAuth, (req, res) => {
     res.status(200).json({ isAuthenticated: true });
 });
