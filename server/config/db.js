@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const express = require('express')
 
+require('dotenv').config();
 const app = express();
-const dbURI = 'mongodb+srv://murithikevin54:q5YThho4Pv6piIcn@cluster0.9dqph.mongodb.net/';
+const MONGODB_URI = process.env.MONGODB_URI;
 
 async function connectDB() {
   try{
-    await mongoose.connect(dbURI);
+    await mongoose.connect(MONGODB_URI);
     console.log('MongoDB Connected Successfully');
   }
   catch (err) {

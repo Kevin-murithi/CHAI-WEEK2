@@ -4,7 +4,9 @@ const authRoutes = require('./routes/authRoutes')
 const { connectDB } = require('./config/db.js');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const { checkAuth } = require('./middleware/authMiddleware.js');
 
+const app = express();
 app.use(express.json())
 app.use(cookieParser());
 const corsOptions = {
