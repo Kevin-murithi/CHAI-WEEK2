@@ -183,80 +183,86 @@ export default function FarmerApplications() {
           {filteredApps.map(app => (
             <div key={app._id} className="basis-full md:basis-1/2 lg:basis-1/3 grow-0 shrink-0 px-1 lg:px-1.5 mb-3 min-w-[280px]">
               <div className="h-full rounded-xl border border-slate-800 bg-slate-900/70">
-                <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-800">
+                <div className="flex items-center justify-between gap-3 px-4 py-2.5 border-b border-slate-800">
                   <h4 className="text-slate-200 font-medium truncate">{app.field?.name || 'Unknown Field'}</h4>
-                  <StatusChip status={app.status} />
-                </div>
-                <div className="px-4 py-3">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
-                    <div className="min-w-0">
-                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Crop</div>
-                      <div className="text-slate-200 text-sm font-medium truncate">{app.crop}</div>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Amount</div>
-                      <div className="text-green-400 font-semibold text-sm truncate">${app.requestedAmount}</div>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Planting Date</div>
-                      <div className="text-slate-200 text-sm font-medium">{new Date(app.plantingDate).toLocaleDateString()}</div>
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Applied</div>
-                      <div className="text-slate-200 text-sm font-medium">{new Date(app.createdAt).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-wrap items-center gap-2">
-                    {app.purpose && (
-                      <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-200 px-2 py-0.5 text-xs max-w-full truncate" title={app.purpose}>{app.purpose}</span>
-                    )}
-                    {app.climascoreSnapshot?.climascore && (
-                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                        app.climascoreSnapshot.climascore >= 67
-                          ? 'bg-green-500/15 text-green-400'
-                          : app.climascoreSnapshot.climascore >= 34
-                          ? 'bg-yellow-500/15 text-yellow-400'
-                          : 'bg-red-500/15 text-red-400'
-                      }`}>
-                        ClimaScore: {app.climascoreSnapshot.climascore}
-                      </span>
-                    )}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="text-green-400 font-semibold text-sm">${app.requestedAmount}</div>
+                    <StatusChip status={app.status} />
                   </div>
                 </div>
-                <div className="px-4 py-3 border-t border-slate-800">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5"
-                      onClick={() => openApplicationDetails(app)}
-                    >
-                      View Details
-                    </button>
-                    {app.status === 'draft' && (
-                      <button
-                        className="inline-flex items-center rounded-md border border-blue-600/50 bg-blue-600/20 hover:bg-blue-600/30 text-blue-100 text-xs px-2.5 py-1.5"
-                        onClick={() => alert('Edit functionality coming soon')}
-                      >
-                        Edit
-                      </button>
+                <div className="px-4 py-2">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5">
+                    <div className="min-w-[40%] md:min-w-0 md:basis-1/4 flex items-baseline gap-1.5">
+                      <span className="text-slate-400 text-xs">Crop:</span>
+                      <span className="text-slate-200 text-sm font-medium truncate">{app.crop}</span>
+                    </div>
+                    <div className="min-w-[40%] md:min-w-0 md:basis-1/4 flex items-baseline gap-1.5">
+                      <span className="text-slate-400 text-xs">Planting:</span>
+                      <span className="text-slate-200 text-sm font-medium">{new Date(app.plantingDate).toLocaleDateString()}</span>
+                    </div>
+                    <div className="min-w-[40%] md:min-w-0 md:basis-1/4 flex items-baseline gap-1.5">
+                      <span className="text-slate-400 text-xs">Applied:</span>
+                      <span className="text-slate-200 text-sm font-medium">{new Date(app.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    {app.expectedHarvest && (
+                      <div className="min-w-[40%] md:min-w-0 md:basis-1/4 flex items-baseline gap-1.5">
+                        <span className="text-slate-400 text-xs">Harvest:</span>
+                        <span className="text-slate-200 text-sm font-medium">{new Date(app.expectedHarvest).toLocaleDateString()}</span>
+                      </div>
                     )}
-                    {(app.status === 'denied' || app.status === 'draft') && (
+                  </div>
+                  <div className="mt-2 flex items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {app.purpose && (
+                        <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-200 px-2 py-0.5 text-xs max-w-[60%] md:max-w-none truncate" title={app.purpose}>{app.purpose}</span>
+                      )}
+                      {app.climascoreSnapshot?.climascore && (
+                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          app.climascoreSnapshot.climascore >= 67
+                            ? 'bg-green-500/15 text-green-400'
+                            : app.climascoreSnapshot.climascore >= 34
+                            ? 'bg-yellow-500/15 text-yellow-400'
+                            : 'bg-red-500/15 text-red-400'
+                        }`}>
+                          ClimaScore: {app.climascoreSnapshot.climascore}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
                         className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5"
-                        onClick={() => duplicateApplication(app)}
+                        onClick={() => openApplicationDetails(app)}
                       >
-                        Duplicate
+                        View Details
                       </button>
-                    )}
-                    {app.status === 'draft' && (
-                      <button
-                        className="inline-flex items-center rounded-md border border-red-600/50 bg-red-600/20 hover:bg-red-600/30 text-red-100 text-xs px-2.5 py-1.5"
-                        onClick={() => deleteApplication(app._id)}
-                      >
-                        Delete
-                      </button>
-                    )}
+                      {app.status === 'draft' && (
+                        <button
+                          className="inline-flex items-center rounded-md border border-blue-600/50 bg-blue-600/20 hover:bg-blue-600/30 text-blue-100 text-xs px-2.5 py-1.5"
+                          onClick={() => alert('Edit functionality coming soon')}
+                        >
+                          Edit
+                        </button>
+                      )}
+                      {(app.status === 'denied' || app.status === 'draft') && (
+                        <button
+                          className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5"
+                          onClick={() => duplicateApplication(app)}
+                        >
+                          Duplicate
+                        </button>
+                      )}
+                      {app.status === 'draft' && (
+                        <button
+                          className="inline-flex items-center rounded-md border border-red-600/50 bg-red-600/20 hover:bg-red-600/30 text-red-100 text-xs px-2.5 py-1.5"
+                          onClick={() => deleteApplication(app._id)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
+                {/* Footer removed as actions are inline above to save vertical space */}
               </div>
             </div>
           ))}
