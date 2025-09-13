@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-function AIResourceRecommender({ fields }) {
+function AIResourceRecommender({ fields, onResourceClick }) {
   const [recommendations, setRecommendations] = useState([])
   const [loading, setLoading] = useState(false)
 
@@ -219,9 +219,9 @@ function AIResourceRecommender({ fields }) {
 
   if (loading) {
     return (
-      <div className="card">
-        <div className="card-header">
-          <h3>🤖 AI Learning Recommendations</h3>
+      <div style={{backgroundColor: 'transparent', padding: '16px'}}>
+        <div style={{marginBottom: '16px'}}>
+          <h3 style={{marginBottom: '8px', color: '#1f2937'}}>Smart Learning Paths</h3>
         </div>
         <div className="muted">Analyzing your fields to recommend personalized learning resources...</div>
       </div>
@@ -229,10 +229,10 @@ function AIResourceRecommender({ fields }) {
   }
 
   return (
-    <div className="card">
-      <div className="card-header">
-        <h3>🤖 AI Learning Recommendations</h3>
-        <div className="muted small">
+    <div style={{backgroundColor: 'transparent', padding: '16px'}}>
+      <div style={{marginBottom: '16px'}}>
+        <h3 style={{marginBottom: '8px', color: '#fff'}}>Smart Learning Paths</h3>
+        <div className="muted" style={{fontSize: '14px'}}>
           Personalized learning paths based on your field conditions and farming needs
         </div>
       </div>
@@ -240,53 +240,91 @@ function AIResourceRecommender({ fields }) {
       {recommendations.length === 0 ? (
         <div className="muted">Add fields and sensor data to get personalized learning recommendations.</div>
       ) : (
-        <div>
+        <div className="row" style={{gap: 12, flexWrap: 'wrap'}}>
           {recommendations.map((rec, idx) => (
-            <div key={idx} className="card sub" style={{
-              marginTop: 12,
-              borderLeft: `4px solid ${rec.priority === 'high' ? '#ef4444' : rec.priority === 'medium' ? '#eab308' : '#6b7280'}`
-            }}>
-              <div className="row" style={{alignItems: 'flex-start', marginBottom: 8}}>
-                <div className="col">
+            <div key={idx} className="col" style={{minWidth: 300, maxWidth: 380, flex: '1 1 calc(33.333% - 12px)'}}>
+              <div className="card" style={{
+                height: '100%',
+                backgroundColor: '#1e293b',
+                border: '1px solid #334155',
+                borderRadius: '8px',
+                color: 'white'
+              }}>
+                <div className="card-header" style={{backgroundColor: 'transparent', borderBottom: '1px solid #334155'}}>
                   <div className="row" style={{justifyContent: 'space-between', alignItems: 'center'}}>
-                    <div>
-                      <strong>{rec.title}</strong>
-                      <span className="badge" style={{
-                        marginLeft: 8,
-                        backgroundColor: rec.priority === 'high' ? '#fee2e2' : '#fef3c7',
-                        color: rec.priority === 'high' ? '#991b1b' : '#92400e'
-                      }}>
-                        {rec.priority}
-                      </span>
-                    </div>
-                    <div className="muted small">{rec.category}</div>
-                  </div>
-                  <div className="muted small" style={{marginTop: 4}}>{rec.description}</div>
-                  <div className="muted small" style={{marginTop: 4, fontStyle: 'italic'}}>{rec.reason}</div>
-                </div>
-              </div>
-
-              <div style={{marginTop: 12}}>
-                <h5>📚 Recommended Resources</h5>
-                <div className="row" style={{gap: '8px', flexWrap: 'wrap'}}>
-                  {rec.resources.map((resource, rIdx) => (
-                    <div key={rIdx} className="pill" style={{
-                      backgroundColor: '#f3f4f6',
-                      color: '#374151',
-                      cursor: 'pointer'
+                    <h4 style={{margin: 0, color: 'white', fontSize: '15px'}}>{rec.title}</h4>
+                    <span className="badge" style={{
+                      backgroundColor: rec.priority === 'high' ? '#dc2626' : '#d97706',
+                      color: 'white',
+                      fontSize: '10px'
                     }}>
-                      <span style={{marginRight: 4}}>
-                        {resource.type === 'video' ? '🎥' :
-                         resource.type === 'guide' ? '📖' :
-                         resource.type === 'course' ? '🎓' :
-                         resource.type === 'webinar' ? '🎤' : '📄'}
-                      </span>
-                      <span>{resource.title}</span>
-                      {resource.duration && (
-                        <span style={{marginLeft: 4, opacity: 0.7}}>({resource.duration})</span>
+                      {rec.priority}
+                    </span>
+                  </div>
+                </div>
+                <div style={{padding: 12, flex: 1}}>
+                  <div style={{marginBottom: 6}}>
+                    <div className="muted small" style={{color: '#94a3b8'}}>Category</div>
+                    <div style={{color: '#e2e8f0', fontSize: '13px'}}>{rec.category}</div>
+                  </div>
+                  <div style={{marginBottom: 8}}>
+                    <div className="muted small" style={{color: '#94a3b8'}}>Description</div>
+                    <div style={{fontSize: '12px', lineHeight: '1.3', color: '#cbd5e1'}}>{rec.description}</div>
+                  </div>
+                  <div style={{marginBottom: 10}}>
+                    <div className="muted small" style={{color: '#94a3b8'}}>Why recommended</div>
+                    <div style={{
+                      fontSize: '11px',
+                      padding: '3px 8px',
+                      backgroundColor: '#0f172a',
+                      borderRadius: '12px',
+                      color: '#94a3b8',
+                      display: 'inline-block'
+                    }}>{rec.reason}</div>
+                  </div>
+                  <div>
+                    <div className="muted small" style={{marginBottom: 6, color: '#94a3b8'}}>Resources ({rec.resources.length})</div>
+                    <div style={{display: 'flex', flexWrap: 'wrap', gap: '4px'}}>
+                      {rec.resources.slice(0, 3).map((resource, rIdx) => (
+                        <span 
+                          key={rIdx}
+                          className="badge"
+                          style={{
+                            backgroundColor: resource.type === 'course' ? '#1e40af' : resource.type === 'video' ? '#d97706' : '#7c3aed',
+                            color: 'white',
+                            fontSize: '9px',
+                            padding: '2px 5px',
+                            cursor: 'pointer'
+                          }}
+                          onClick={() => onResourceClick && onResourceClick({
+                            ...resource,
+                            description: `Learn ${resource.title.toLowerCase()} with this comprehensive ${resource.type}. ${resource.duration ? `Duration: ${resource.duration}` : ''}`
+                          })}
+                        >
+                          {resource.type}
+                        </span>
+                      ))}
+                      {rec.resources.length > 3 && (
+                        <span className="badge" style={{backgroundColor: '#475569', color: '#94a3b8', fontSize: '9px', padding: '2px 5px'}}>+{rec.resources.length - 3}</span>
                       )}
                     </div>
-                  ))}
+                  </div>
+                </div>
+                <div className="card-footer" style={{backgroundColor: 'transparent', borderTop: '1px solid #334155', padding: '8px 12px'}}>
+                  <button 
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      if (rec.resources.length > 0) {
+                        onResourceClick && onResourceClick({
+                          ...rec.resources[0],
+                          description: `Learn ${rec.resources[0].title.toLowerCase()} with this comprehensive ${rec.resources[0].type}. ${rec.resources[0].duration ? `Duration: ${rec.resources[0].duration}` : ''}`
+                        })
+                      }
+                    }}
+                    style={{width: '100%', padding: '6px 12px', fontSize: '12px'}}
+                  >
+                    Start Learning
+                  </button>
                 </div>
               </div>
             </div>
@@ -300,6 +338,9 @@ function AIResourceRecommender({ fields }) {
 export default function FarmerResources() {
   const [fields, setFields] = useState([])
   const [loading, setLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('recommendations')
+  const [selectedResource, setSelectedResource] = useState(null)
+  const [showResourceModal, setShowResourceModal] = useState(false)
 
   useEffect(() => {
     async function loadFields() {
@@ -328,93 +369,285 @@ export default function FarmerResources() {
     )
   }
 
+  const openResourceModal = (resource) => {
+    setSelectedResource(resource)
+    setShowResourceModal(true)
+  }
+
+  const closeResourceModal = () => {
+    setShowResourceModal(false)
+    setSelectedResource(null)
+  }
+
+  const generalResources = [
+    {
+      category: 'Crop Management',
+      description: 'Essential techniques for successful crop cultivation and management',
+      resources: [
+        { title: 'Crop Rotation Strategies', type: 'guide', description: 'Learn effective crop rotation patterns to maintain soil health and maximize yields.' },
+        { title: 'Planting Calendar Guide', type: 'guide', description: 'Seasonal planting schedules optimized for your region and climate.' },
+        { title: 'Variety Selection Guide', type: 'guide', description: 'Choose the best crop varieties for your soil and climate conditions.' },
+        { title: 'Harvesting Techniques', type: 'video', description: 'Best practices for timing and methods of crop harvesting.' }
+      ]
+    },
+    {
+      category: 'Financial Planning',
+      description: 'Tools and strategies for managing farm finances and securing funding',
+      resources: [
+        { title: 'Farm Budget Planning', type: 'course', description: 'Comprehensive course on creating and managing farm budgets effectively.' },
+        { title: 'Cost Management Strategies', type: 'guide', description: 'Reduce operational costs while maintaining productivity and quality.' },
+        { title: 'Loan Application Guide', type: 'guide', description: 'Step-by-step guide to preparing successful loan applications.' },
+        { title: 'Agricultural Insurance Options', type: 'guide', description: 'Understanding different insurance products to protect your farm.' }
+      ]
+    },
+    {
+      category: 'Technology & Innovation',
+      description: 'Modern farming technologies and digital tools for enhanced productivity',
+      resources: [
+        { title: 'IoT Sensor Technology', type: 'course', description: 'Learn how to implement and use IoT sensors for precision farming.' },
+        { title: 'Precision Agriculture Basics', type: 'video', description: 'Introduction to GPS-guided farming and variable rate applications.' },
+        { title: 'Drone Applications in Agriculture', type: 'webinar', description: 'Using drones for crop monitoring, spraying, and field mapping.' },
+        { title: 'Farm Data Analytics', type: 'course', description: 'Turn your farm data into actionable insights for better decisions.' }
+      ]
+    }
+  ]
+
   return (
     <div>
       <h1>Resources & Learning</h1>
-      <div className="muted" style={{marginBottom: 16}}>
-        AI-powered learning recommendations tailored to your farming needs
+      <div className="muted" style={{marginBottom: 24}}>
+        AI-powered learning recommendations and comprehensive farming resources
       </div>
 
-      {/* AI Resource Recommender */}
-      <AIResourceRecommender fields={fields} />
-
-      {/* General Resources */}
-      <div className="card" style={{marginTop: 16}}>
-        <div className="card-header">
-          <h3>📚 General Resources</h3>
-        </div>
-
-        <div className="row" style={{gap: '16px'}}>
-          <div className="col">
-            <div className="card sub">
-              <h4>🌱 Crop Management</h4>
-              <ul style={{paddingLeft: 16, margin: 0}}>
-                <li>Crop rotation strategies</li>
-                <li>Planting calendars</li>
-                <li>Variety selection guides</li>
-                <li>Harvesting techniques</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="col">
-            <div className="card sub">
-              <h4>💰 Financial Planning</h4>
-              <ul style={{paddingLeft: 16, margin: 0}}>
-                <li>Budget planning tools</li>
-                <li>Cost management</li>
-                <li>Loan application guides</li>
-                <li>Insurance options</li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="col">
-            <div className="card sub">
-              <h4>🔬 Technology & Innovation</h4>
-              <ul style={{paddingLeft: 16, margin: 0}}>
-                <li>Sensor technology</li>
-                <li>Precision agriculture</li>
-                <li>Drone applications</li>
-                <li>Data analytics</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Community & Support */}
-      <div className="card" style={{marginTop: 16}}>
-        <div className="card-header">
-          <h3>🤝 Community & Support</h3>
-        </div>
-
-        <div className="row">
-          <div className="col">
-            <div className="card sub">
-              <h4>Forum Discussions</h4>
-              <div className="muted small">Connect with other farmers, share experiences, and get advice from the community.</div>
-              <button className="btn btn-secondary" style={{marginTop: 8}}>Join Community</button>
-            </div>
-          </div>
-
-          <div className="col">
-            <div className="card sub">
-              <h4>Expert Consultations</h4>
-              <div className="muted small">Schedule one-on-one sessions with agricultural experts and specialists.</div>
-              <button className="btn btn-secondary" style={{marginTop: 8}}>Book Consultation</button>
-            </div>
-          </div>
-
-          <div className="col">
-            <div className="card sub">
-              <h4>24/7 Support</h4>
-              <div className="muted small">Get help with technical issues, account questions, and farming emergencies.</div>
-              <button className="btn btn-secondary" style={{marginTop: 8}}>Contact Support</button>
-            </div>
-          </div>
+      {/* Toggle Buttons */}
+      <div style={{
+        marginBottom: 24,
+        display: 'flex',
+        justifyContent: 'flex-start'
+      }}>
+        <div style={{
+          backgroundColor: '#f8fafc',
+          borderRadius: '6px',
+          padding: '2px',
+          border: '1px solid #e2e8f0',
+          display: 'inline-flex',
+          gap: '2px'
+        }}>
+          <button 
+            className={`btn`}
+            onClick={() => setActiveTab('recommendations')}
+            style={{
+              margin: 0,
+              borderRadius: '4px',
+              border: 'none',
+              padding: '6px 12px',
+              fontWeight: '500',
+              fontSize: '14px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeTab === 'recommendations' ? '#3b82f6' : 'transparent',
+              color: activeTab === 'recommendations' ? 'white' : '#64748b',
+              boxShadow: activeTab === 'recommendations' ? '0 1px 3px rgba(59, 130, 246, 0.3)' : 'none',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'recommendations') {
+                e.target.style.backgroundColor = '#e2e8f0'
+                e.target.style.color = '#1e293b'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'recommendations') {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.color = '#64748b'
+              }
+            }}
+          >
+            Smart Learning Paths
+          </button>
+          <button 
+            className={`btn`}
+            onClick={() => setActiveTab('resources')}
+            style={{
+              margin: 0,
+              borderRadius: '4px',
+              border: 'none',
+              padding: '6px 12px',
+              fontWeight: '500',
+              fontSize: '14px',
+              transition: 'all 0.2s ease',
+              backgroundColor: activeTab === 'resources' ? '#3b82f6' : 'transparent',
+              color: activeTab === 'resources' ? 'white' : '#64748b',
+              boxShadow: activeTab === 'resources' ? '0 1px 3px rgba(59, 130, 246, 0.3)' : 'none',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              if (activeTab !== 'resources') {
+                e.target.style.backgroundColor = '#e2e8f0'
+                e.target.style.color = '#1e293b'
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeTab !== 'resources') {
+                e.target.style.backgroundColor = 'transparent'
+                e.target.style.color = '#64748b'
+              }
+            }}
+          >
+            General Resources
+          </button>
         </div>
       </div>
+
+      {/* AI Recommendations Container */}
+      {activeTab === 'recommendations' && (
+        <div>
+          <AIResourceRecommender fields={fields} onResourceClick={openResourceModal} />
+        </div>
+      )}
+
+      {/* General Resources Container */}
+      {activeTab === 'resources' && (
+        <div>
+          <div className="row" style={{gap: 12, flexWrap: 'wrap'}}>
+            {generalResources.map((category, idx) => 
+              category.resources.map((resource, rIdx) => (
+                <div key={`${idx}-${rIdx}`} className="col" style={{flex: '1 1 calc(33.333% - 12px)', minWidth: 0}}>
+                  <div className="card" style={{height: '100%'}}>
+                    <div className="card-header">
+                      <div className="row" style={{justifyContent: 'space-between', alignItems: 'center'}}>
+                        <h4 style={{margin: 0, fontSize: '14px', lineHeight: '1.2'}}>{resource.title}</h4>
+                        <span className="badge" style={{
+                          backgroundColor: resource.type === 'course' ? '#dbeafe' : resource.type === 'video' ? '#fef3c7' : '#f3e8ff',
+                          color: resource.type === 'course' ? '#1e40af' : resource.type === 'video' ? '#92400e' : '#7c3aed',
+                          fontSize: '9px',
+                          padding: '2px 5px'
+                        }}>
+                          {resource.type}
+                        </span>
+                      </div>
+                    </div>
+                    <div style={{padding: 12, flex: 1}}>
+                      <div style={{marginBottom: 6}}>
+                        <div className="muted small">Category</div>
+                        <div style={{fontSize: '12px'}}>{category.category}</div>
+                      </div>
+                      <div style={{marginBottom: 8}}>
+                        <div className="muted small">Description</div>
+                        <div style={{fontSize: '11px', lineHeight: '1.3', color: '#4b5563'}}>{resource.description}</div>
+                      </div>
+                    </div>
+                    <div className="card-footer" style={{padding: '8px 12px'}}>
+                      <button 
+                        className="btn btn-primary btn-sm"
+                        onClick={() => openResourceModal(resource)}
+                        style={{width: '100%', padding: '6px 12px', fontSize: '11px'}}
+                      >
+                        View Resource
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Resource Detail Modal */}
+      {showResourceModal && (
+        <>
+          <div 
+            id="resource-modal-backdrop" 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backdropFilter: 'blur(4px)',
+              zIndex: 9998
+            }}
+            onClick={closeResourceModal}
+          />
+          <dialog 
+            id="resource-modal" 
+            open
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 9999,
+              width: '90%',
+              maxWidth: '600px',
+              maxHeight: '80vh',
+              border: 'none',
+              borderRadius: '12px',
+              padding: 0,
+              backgroundColor: 'rgba(30, 41, 59, 0.95)',
+              backdropFilter: 'blur(10px)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            <button
+              onClick={closeResourceModal}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'rgba(0, 0, 0, 0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '32px',
+                height: '32px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                zIndex: 10000
+              }}
+            >
+              ×
+            </button>
+            <div style={{padding: '24px'}}>
+              <div style={{marginBottom: '16px'}}>
+                <span className="badge" style={{
+                  backgroundColor: selectedResource?.type === 'course' ? '#1e40af' : selectedResource?.type === 'video' ? '#d97706' : '#7c3aed',
+                  color: 'white',
+                  fontSize: '12px',
+                  padding: '6px 12px',
+                  marginBottom: '12px'
+                }}>
+                  {selectedResource?.type}
+                </span>
+              </div>
+              <h2 style={{marginBottom: '16px', color: 'white'}}>{selectedResource?.title}</h2>
+              <p style={{marginBottom: '24px', lineHeight: '1.6', color: '#cbd5e1'}}>{selectedResource?.description}</p>
+              
+              <div style={{marginBottom: '24px', padding: '16px', backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #334155'}}>
+                <h4 style={{marginBottom: '12px', color: 'white'}}>What you'll learn:</h4>
+                <ul style={{paddingLeft: '20px', margin: 0, color: '#94a3b8'}}>
+                  <li>Practical techniques you can implement immediately</li>
+                  <li>Best practices from experienced farmers</li>
+                  <li>Step-by-step guidance with real examples</li>
+                  <li>Tips for adapting methods to your specific conditions</li>
+                </ul>
+              </div>
+              
+              <div className="row" style={{gap: '12px', justifyContent: 'flex-end'}}>
+                <button className="btn btn-secondary" onClick={closeResourceModal}>
+                  Close
+                </button>
+                <button className="btn btn-primary">
+                  Access Resource
+                </button>
+              </div>
+            </div>
+          </dialog>
+        </>
+      )}
     </div>
   )
 }
