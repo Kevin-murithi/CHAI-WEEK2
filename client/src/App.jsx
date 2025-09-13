@@ -2,6 +2,7 @@ import './App.css'
 import { useState, useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
+import ClimaScoreLogo from './components/ClimaScoreLogo.jsx'
 import ClimaPanel from './components/ClimaPanel.jsx'
 import FarmerMap from './components/FarmerMap.jsx'
 import FarmerFields from './components/FarmerFields.jsx'
@@ -103,8 +104,8 @@ function Login() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner">
-          <div className="brand" style={{marginBottom:12}}><div className="brand-badge">CS</div><span>ClimaScore</span></div>
+        <div className="auth-hero-inner" style={{textAlign:'center'}}>
+          <ClimaScoreLogo size={56} className="mb-3" />
           <div className="auth-title">Welcome back</div>
           <div className="auth-sub">ClimaScore is an AI-powered platform that serves farmers and lenders with actionable climate intelligence.</div>
           <ul className="hero-points" aria-label="Platform benefits">
@@ -120,7 +121,10 @@ function Login() {
       </section>
       <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
-          <h2 style={{marginBottom:12}}>Sign in</h2>
+          <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+            <ClimaScoreLogo size={36} className="mb-2" />
+            <h2 style={{marginBottom:12}}>Sign in</h2>
+          </div>
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="row">
               <div className="col">
@@ -200,8 +204,8 @@ function Register() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner">
-          <div className="brand" style={{marginBottom:12}}><div className="brand-badge">CS</div><span>ClimaScore</span></div>
+        <div className="auth-hero-inner" style={{textAlign:'center'}}>
+          <ClimaScoreLogo size={96} className="mb-3" />
           <div className="auth-title">Create your account</div>
           <div className="auth-sub">Join ClimaScore to put AI-driven climate intelligence to work.</div>
           <ul className="hero-points" aria-label="Platform benefits">
@@ -215,9 +219,14 @@ function Register() {
           </div>
         </div>
       </section>
+
       <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
-          <h2 style={{marginBottom:12}}>Sign up</h2>
+          <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
+            <ClimaScoreLogo size={36} className="mb-2" />
+            <h2 style={{marginBottom:12}}>Sign up</h2>
+          </div>
+          
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="row">
               <div className="col">
@@ -261,27 +270,56 @@ function Register() {
   )
 }
 
-function Sidebar({ items, title }) {
+function Icon({ name, className }) {
+  const props = { className: `w-5 h-5 ${className||''}`, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 }
+  switch (name) {
+    case 'home': return (<svg {...props} viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10.5V20h5v-4h4v4h5v-9.5"/></svg>)
+    case 'fields': return (<svg {...props} viewBox="0 0 24 24"><path d="M3 20h18"/><path d="M3 15l6-3 6 3 6-3"/><path d="M3 10l6-3 6 3 6-3"/></svg>)
+    case 'finance': return (<svg {...props} viewBox="0 0 24 24"><path d="M4 20h16"/><rect x="6" y="10" width="12" height="6" rx="1"/><path d="M8 10V7a4 4 0 1 1 8 0v3"/></svg>)
+    case 'advisory': return (<svg {...props} viewBox="0 0 24 24"><path d="M4 5h16v11H7l-3 3z"/></svg>)
+    case 'resources': return (<svg {...props} viewBox="0 0 24 24"><path d="M4 19.5V6a2 2 0 0 1 2-2h10l4 4v11.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M16 4v4h4"/></svg>)
+    case 'overview': return (<svg {...props} viewBox="0 0 24 24"><path d="M3 12h18"/><path d="M3 6h18"/><path d="M3 18h18"/></svg>)
+    case 'queue': return (<svg {...props} viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h6"/></svg>)
+    case 'application': return (<svg {...props} viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>)
+    case 'portfolio': return (<svg {...props} viewBox="0 0 24 24"><path d="M4 7h16v12H4z"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>)
+    case 'admin': return (<svg {...props} viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 3.3l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .69.41 1.3 1.02 1.58.62.29.98.92.98 1.61s-.36 1.32-.98 1.61A1.99 1.99 0 0 0 19.4 15z"/></svg>)
+    default: return null
+  }
+}
+
+function Sidebar({ items, collapsed, onToggle }) {
   const { user, logout } = useAuth()
   return (
-    <aside className="sidebar">
-      {title && <div className="brand" style={{marginBottom:8}}><div className="brand-badge">CS</div> <span>{title}</span></div>}
-      <nav className="nav">
+    <aside className={`fixed left-0 top-14 h-[calc(100vh-3.5rem)] border-r border-slate-800 bg-slate-900/80 backdrop-blur z-30 transition-[width] duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
+      <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-end'} px-3 py-2`}> 
+        <button aria-label="Toggle sidebar" onClick={onToggle} className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded border border-slate-700 text-slate-300 hover:bg-slate-800">
+          {collapsed ? '›' : '‹'}
+        </button>
+      </div>
+      <nav className="mt-2 px-1 space-y-1">
         {items.map(i => (
-          <NavLink key={i.to} to={i.to} className={({isActive})=> (isActive ? 'active' : '')}>
-            {i.label}
+          <NavLink key={i.to} to={i.to} className={(nav)=> `group flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium ${nav.isActive ? 'bg-blue-500/15 text-blue-200 border border-blue-500/30' : 'text-slate-300 hover:bg-slate-800/60'}`}>
+            {({ isActive }) => (
+              <>
+                <Icon name={i.icon} className={`${isActive ? 'text-blue-300' : 'text-slate-300'} shrink-0`} />
+                <span className={`${collapsed ? 'hidden' : 'block'}`}>{i.label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
-      <div className="sidebar-footer">
+      <div className="absolute bottom-0 inset-x-0 p-3 border-t border-slate-800">
         {user && (
           <>
-            <div className="sidebar-user">
-              <div className="user-name">{user.firstName} {user.lastName}</div>
-              <div className="user-role">{user.role}</div>
-            </div>
-            <button className="btn btn-logout" onClick={logout}>
-              Logout
+            {!collapsed && (
+              <div className="mb-2">
+                <div className="text-slate-200 text-sm font-semibold">{user.firstName} {user.lastName}</div>
+                <div className="text-slate-400 text-xs capitalize">{user.role}</div>
+              </div>
+            )}
+            <button onClick={logout} className="w-full text-left inline-flex items-center justify-center gap-2 text-rose-300 border border-rose-600/40 hover:bg-rose-900/30 px-3 py-2 rounded">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+              {!collapsed && <span>Logout</span>}
             </button>
           </>
         )}
@@ -291,36 +329,59 @@ function Sidebar({ items, title }) {
 }
 
 function FarmerLayout() {
+  const [collapsed, setCollapsed] = useState(false)
   const items = [
-    { to: '/dashboard/farmer/home', label: 'Home / Field Overview' },
-    { to: '/dashboard/farmer/fields', label: 'My Fields & Crops' },
-    { to: '/dashboard/farmer/financing', label: 'Financing Center' },
-    { to: '/dashboard/farmer/advisory', label: 'Advisory Feed' },
-    { to: '/dashboard/farmer/resources', label: 'Resources & Learning' },
+    { to: '/dashboard/farmer/home', label: 'Home / Field Overview', icon: 'home' },
+    { to: '/dashboard/farmer/fields', label: 'My Fields & Crops', icon: 'fields' },
+    { to: '/dashboard/farmer/financing', label: 'Financing Center', icon: 'finance' },
+    { to: '/dashboard/farmer/advisory', label: 'Advisory Feed', icon: 'advisory' },
+    { to: '/dashboard/farmer/resources', label: 'Resources & Learning', icon: 'resources' },
   ]
+  const sideW = collapsed ? 'pl-16' : 'pl-60'
   return (
-    <div>
-      <Sidebar items={items} title="Grow Portal" />
-      <main className="content">
-        <Outlet />
+    <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
+      {/* Header */}
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
+        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+          <ClimaScoreLogo />
+          <span>Grow Portal</span>
+        </div>
+      </header>
+      {/* Sidebar */}
+      <Sidebar items={items} title="Grow Portal" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
+      {/* Main content */}
+      <main className={`pt-14 ${sideW} transition-[padding] duration-200`}>
+        <div className="p-4">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
 }
 
 function LenderLayout() {
+  const [collapsed, setCollapsed] = useState(false)
   const items = [
-    { to: '/dashboard/lender/overview', label: 'Executive Overview' },
-    { to: '/dashboard/lender/queue', label: 'Loan Application Queue' },
-    { to: '/dashboard/lender/application', label: 'Application Detail' },
-    { to: '/dashboard/lender/portfolio', label: 'Portfolio Management' },
-    { to: '/dashboard/lender/admin', label: 'Admin & Reporting' },
+    { to: '/dashboard/lender/overview', label: 'Executive Overview', icon: 'overview' },
+    { to: '/dashboard/lender/queue', label: 'Loan Application Queue', icon: 'queue' },
+    { to: '/dashboard/lender/application', label: 'Application Detail', icon: 'application' },
+    { to: '/dashboard/lender/portfolio', label: 'Portfolio Management', icon: 'portfolio' },
+    { to: '/dashboard/lender/admin', label: 'Admin & Reporting', icon: 'admin' },
   ]
+  const sideW = collapsed ? 'pl-16' : 'pl-60'
   return (
-    <div>
-      <Sidebar items={items} title="Risk Console" />
-      <main className="content">
-        <Outlet />
+    <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
+        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+          <ClimaScoreLogo />
+          <span>Risk Console</span>
+        </div>
+      </header>
+      <Sidebar items={items} title="Risk Console" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
+      <main className={`pt-14 ${sideW} transition-[padding] duration-200`}>
+        <div className="p-4">
+          <Outlet />
+        </div>
       </main>
     </div>
   )
@@ -361,7 +422,8 @@ function App() {
 function ConditionalNavBar() {
   const location = useLocation()
   const isAuth = location.pathname === '/login' || location.pathname === '/register'
-  if (isAuth) return null
+  const isDash = location.pathname.startsWith('/dashboard')
+  if (isAuth || isDash) return null
   return <NavBar />
 }
 

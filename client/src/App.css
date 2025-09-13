@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root { color-scheme: dark; --bg:#0b0f1a; --bg-soft:#0f1626; --card: rgba(16,24,40,0.65); --border:#1f2a44; --text:#e7ecf6; --muted:#9aa7c4; --accent:#3b82f6; --ok:#22c55e; --warn:#eab308; --danger:#ef4444; --sidebar: 240px; --radius: 10px; --space-1:6px; --space-2:10px; --space-3:14px; --space-4:18px; --space-5:24px; font-family: Inter, ui-sans-serif, system-ui, Arial, sans-serif; }
 * { box-sizing: border-box; }
 body { margin: 0; color: var(--text); background: linear-gradient(180deg, rgba(12,18,32,0.9), rgba(12,18,32,0.95)), var(--bg); }
@@ -110,7 +112,7 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 .input-error { color: #fecaca; font-size: 12px; margin-top: 6px; }
 
 /* Form action area */
-.form-actions { display: flex; justify-content: flex-end; margin-top: var(--space-2); }
+.form-actions { display: flex; justify-content: center; margin-top: var(--space-2); }
 
 /* Buttons: states */
 .btn { position: relative; }
@@ -138,8 +140,8 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 .btn + .btn { margin-left: var(--space-2); }
 
 /* Auth page buttons keep the gradient */
-.auth-panel .btn-primary { background: linear-gradient(to left, rgba(34,197,94,0.32), rgba(0,0,0,0.85)); border: 1px solid rgba(34,197,94,0.5); color: #ffffff; backdrop-filter: blur(8px); box-shadow: 0 8px 18px rgba(16,185,129,0.22); }
-.auth-panel .btn-primary:hover:not([disabled]) { background: linear-gradient(to left, rgba(34,197,94,0.45), rgba(0,0,0,0.85)); box-shadow: 0 10px 22px rgba(16,185,129,0.3); }
+.auth-panel .btn-primary { background: linear-gradient(135deg, rgba(34,197,94,0.55), rgba(59,130,246,0.20)); border: 1px solid rgba(34,197,94,0.6); color: #101827; backdrop-filter: blur(8px); box-shadow: 0 8px 18px rgba(16,185,129,0.22); }
+.auth-panel .btn-primary:hover:not([disabled]) { background: linear-gradient(135deg, rgba(34,197,94,0.7), rgba(59,130,246,0.25)); box-shadow: 0 10px 22px rgba(16,185,129,0.3); color: #0b1220; }
 .auth-panel .btn-primary[disabled] { opacity: 0.6; box-shadow: none; cursor: default; }
 
 /* Sidebar footer and logout button */
