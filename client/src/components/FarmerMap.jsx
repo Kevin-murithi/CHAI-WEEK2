@@ -88,16 +88,18 @@ export default function FarmerMap({ onFieldsChanged }) {
     <div className="card" style={{height: 500}}>
       <div className="card-header"><h3>Map your fields</h3></div>
       {error && <div className="error" style={{marginBottom:8}}>{error}</div>}
-      <MapContainer center={[-0.1, 37.6]} zoom={9} style={{height: '420px', borderRadius: 8}}>
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
-        <DrawControl onCreated={handleCreated} />
-        {fields.map(f => (
-          <GeoJSON key={f._id}
-            data={f.geometry}
-            style={{ color: scoreToColor(f.latestClimaScore), weight: 2, fillOpacity: 0.2 }}
-          />
-        ))}
-      </MapContainer>
+      <div className="map-container">
+        <MapContainer center={[-0.1, 37.6]} zoom={9} style={{height: '420px', borderRadius: 8}}>
+          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
+          <DrawControl onCreated={handleCreated} />
+          {fields.map(f => (
+            <GeoJSON key={f._id}
+              data={f.geometry}
+              style={{ color: scoreToColor(f.latestClimaScore), weight: 2, fillOpacity: 0.2 }}
+            />
+          ))}
+        </MapContainer>
+      </div>
     </div>
   )
 }

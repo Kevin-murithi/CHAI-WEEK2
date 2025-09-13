@@ -69,6 +69,12 @@ th, td { padding: 10px 12px; border-bottom: 1px solid #1a2540; }
 thead th { font-weight: 600; color: var(--muted); text-transform: none; font-size: 13px; }
 tbody tr:hover { background: rgba(59,130,246,0.05); }
 
+/* Map container - force below sidebar */
+.map-container { position: relative !important; z-index: 1 !important; }
+.map-container .leaflet-container { z-index: 1 !important; }
+.map-container .leaflet-control-container { z-index: 2 !important; }
+.map-container .leaflet-pane { z-index: 1 !important; }
+
 /* Modal */
 dialog { border: none; border-radius: var(--radius); padding: 0; background: rgba(16,24,40,0.92); color: var(--text); }
 .modal-card { background: transparent; border: none; padding: var(--space-4); }
