@@ -369,7 +369,7 @@ export default function FarmerFields() {
           <h3>My Fields & Financing Center</h3>
           <p className="muted small">View your mapped fields and access financing options. Click on field markers for details and funding applications.</p>
         </div>
-        <div style={{height: 'clamp(400px, 50vh, 600px)'}}>
+        <div style={{height: 'clamp(400px, 50vh, 600px)'}} className="map-container">
           <MapContainer center={[-0.1, 37.6]} zoom={9} style={{height: '100%', borderRadius: 8}}>
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap contributors" />
             {fields.map(f => {
