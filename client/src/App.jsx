@@ -362,8 +362,15 @@ function Sidebar({ items, collapsed, onToggle }) {
                 <div className="text-slate-400 text-xs capitalize">{user.role}</div>
               </div>
             )}
-            <button onClick={logout} className="w-full text-left inline-flex items-center justify-center gap-2 text-rose-300 border border-rose-600/40 hover:bg-rose-900/30 px-3 py-2 rounded">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24"><path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+            <button 
+              onClick={logout} 
+              className={`btn-logout inline-flex items-center ${collapsed ? 'justify-center' : 'justify-center gap-2'} px-3 py-2 rounded`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                <path d="M9 21H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3"/>
+                <path d="M16 17l5-5-5-5"/>
+                <path d="M21 12H9"/>
+              </svg>
               {!collapsed && <span>Logout</span>}
             </button>
           </>
