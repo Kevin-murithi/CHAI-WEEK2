@@ -121,7 +121,16 @@ export default function FarmerAdvisory() {
       <FieldSelector fields={fields} selectedField={selectedField} onSelect={setSelectedField} />
 
       <Card className="overflow-hidden">
-        <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+        <div className="relative">
+          <Tabs tabs={tabs} active={activeTab} onChange={uiLoading ? (()=>{}) : setActiveTab} />
+          {uiLoading && (
+            <div className="absolute inset-0 z-10 bg-slate-900/50 border-b border-slate-800 backdrop-blur-[1px] rounded-t-xl flex items-center justify-center pointer-events-auto cursor-wait">
+              <div className="text-slate-300 text-xs inline-flex items-center gap-2">
+                <AIIcon className="w-4 h-4" /> Running AI…
+              </div>
+            </div>
+          )}
+        </div>
         <div className="mt-4 transition-all">
           {uiLoading && (
             <div className="py-6">

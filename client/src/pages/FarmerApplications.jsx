@@ -1,24 +1,33 @@
 import { useEffect, useState } from 'react'
 
 function StatusChip({ status }) {
-  const map = { 
-    pending: '🟡 Pending', 
-    approved: '🟢 Approved', 
-    denied: '🔴 Denied', 
-    needs_info: '🟠 Needs Info',
-    draft: '📝 Draft'
+  const map = {
+    pending: { label: '🟡 Pending', color: 'bg-yellow-500/15 text-yellow-400' },
+    approved: { label: '🟢 Approved', color: 'bg-green-500/15 text-green-400' },
+    denied: { label: '🔴 Denied', color: 'bg-red-500/15 text-red-400' },
+    needs_info: { label: '🟠 Needs Info', color: 'bg-orange-500/15 text-orange-400' },
+    draft: { label: '📝 Draft', color: 'bg-slate-500/15 text-slate-300' },
   }
-  return <span className="badge">{map[status] || status}</span>
+  const v = map[status] || { label: status, color: 'bg-slate-600/20 text-slate-200' }
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${v.color}`}>
+      {v.label}
+    </span>
+  )
 }
 
 function PriorityChip({ priority }) {
   const map = {
-    high: { color: '#ef4444', label: '🔴 High' },
-    medium: { color: '#eab308', label: '🟡 Medium' },
-    low: { color: '#22c55e', label: '🟢 Low' }
+    high: { label: '🔴 High', color: 'bg-red-500/15 text-red-400' },
+    medium: { label: '🟡 Medium', color: 'bg-yellow-500/15 text-yellow-400' },
+    low: { label: '🟢 Low', color: 'bg-green-500/15 text-green-400' },
   }
-  const p = map[priority] || { color: '#64748b', label: priority }
-  return <span className="badge" style={{ backgroundColor: p.color + '20', color: p.color }}>{p.label}</span>
+  const p = map[priority] || { label: priority, color: 'bg-slate-600/20 text-slate-200' }
+  return (
+    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${p.color}`}>
+      {p.label}
+    </span>
+  )
 }
 
 export default function FarmerApplications() {
@@ -61,7 +70,7 @@ export default function FarmerApplications() {
       // Show success modal
       setSuccessMessage('Application deleted successfully!')
       setShowSuccessModal(true)
-      document.getElementById('success-modal-backdrop').style.display = 'block'
+      document.getElementById('success-modal-backdrop')?.classList.remove('hidden')
       document.getElementById('success-modal')?.showModal()
     } catch (e) {
       alert('Failed to delete application: ' + e.message)
@@ -90,12 +99,12 @@ export default function FarmerApplications() {
       
       // Close any open modals first
       document.getElementById('app-details-modal')?.close()
-      document.getElementById('modal-backdrop').style.display = 'none'
+      document.getElementById('modal-backdrop')?.classList.add('hidden')
       
       // Show success modal
       setSuccessMessage('Application duplicated as draft successfully!')
       setShowSuccessModal(true)
-      document.getElementById('success-modal-backdrop').style.display = 'block'
+      document.getElementById('success-modal-backdrop')?.classList.remove('hidden')
       document.getElementById('success-modal')?.showModal()
     } catch (e) {
       alert('Failed to duplicate application: ' + e.message)
@@ -104,7 +113,7 @@ export default function FarmerApplications() {
 
   function openApplicationDetails(app) {
     setSelectedApp(app)
-    document.getElementById('modal-backdrop').style.display = 'block'
+    document.getElementById('modal-backdrop')?.classList.remove('hidden')
     document.getElementById('app-details-modal')?.showModal()
   }
 
@@ -122,107 +131,127 @@ export default function FarmerApplications() {
   }
 
   return (
-    <div>
-      <div className="card-header" style={{ marginBottom: 24 }}>
-        <h1>My Applications</h1>
-        <p className="muted">Manage and track all your funding applications</p>
+    <div className="space-y-4">
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold text-slate-100">My Applications</h1>
+        <p className="text-slate-400 text-sm">Manage and track all your funding applications</p>
       </div>
 
-      {error && <div className="error" style={{ marginBottom: 16 }}>{error}</div>}
+      {error && (
+        <div className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-200 px-3 py-2 text-sm">
+          {error}
+        </div>
+      )}
 
       {/* Status Filter Tabs */}
-      <div className="row" style={{ gap: 8, marginBottom: 24 }}>
-        {Object.entries(statusCounts).map(([status, count]) => (
-          <button
-            key={status}
-            className={`btn ${filter === status ? 'btn-primary' : 'btn-secondary'}`}
-            onClick={() => setFilter(status)}
-          >
-            {status.charAt(0).toUpperCase() + status.slice(1)} ({count})
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-2 mb-2">
+        {Object.entries(statusCounts).map(([status, count]) => {
+          const isActive = filter === status
+          return (
+            <button
+              key={status}
+              className={`whitespace-nowrap inline-flex items-center gap-2 rounded-md text-sm font-medium transition-colors duration-150 px-2.5 py-1.5 border focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 ${
+                isActive
+                  ? '!bg-blue-600/20 !text-blue-100 !border-blue-500/50'
+                  : '!bg-transparent text-slate-300 !border-blue-500/30 hover:!bg-blue-500/10 hover:text-slate-100'
+              }`}
+              onClick={() => setFilter(status)}
+            >
+              <span className="capitalize">{status}</span>
+              <span className={`text-xs rounded-full px-2 py-0.5 ${isActive ? '!bg-blue-500/30 !text-blue-100' : 'bg-slate-700/60 text-slate-300'}`}>{count}</span>
+            </button>
+          )
+        })}
       </div>
 
       {/* Applications Grid */}
       {loading ? (
-        <div className="card">
-          <div style={{ textAlign: 'center', padding: 32 }}>Loading applications...</div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/70">
+          <div className="text-center px-6 py-8 text-slate-300">Loading applications...</div>
         </div>
       ) : !filteredApps.length ? (
-        <div className="card">
-          <div style={{ textAlign: 'center', padding: 32 }}>
-            <div className="muted">No {filter === 'all' ? '' : filter} applications found</div>
+        <div className="rounded-xl border border-slate-800 bg-slate-900/70">
+          <div className="text-center px-6 py-8">
+            <div className="text-slate-400">No {filter === 'all' ? '' : filter} applications found</div>
             {filter === 'all' && (
-              <p className="muted small" style={{ marginTop: 8 }}>
-                Visit the Fields & Financing page to submit your first application
-              </p>
+              <p className="text-slate-500 text-sm mt-2">Visit the Fields & Financing page to submit your first application</p>
             )}
           </div>
         </div>
       ) : (
-        <div className="row" style={{ gap: 16 }}>
+        <div className="flex flex-wrap -mx-1 lg:-mx-1.5">
           {filteredApps.map(app => (
-            <div key={app._id} className="col" style={{ minWidth: 320, maxWidth: 400 }}>
-              <div className="card">
-                <div className="card-header">
-                  <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h4>{app.field?.name || 'Unknown Field'}</h4>
-                    <StatusChip status={app.status} />
+            <div key={app._id} className="basis-full md:basis-1/2 lg:basis-1/3 grow-0 shrink-0 px-1 lg:px-1.5 mb-3 min-w-[280px]">
+              <div className="h-full rounded-xl border border-slate-800 bg-slate-900/70">
+                <div className="flex items-start justify-between gap-3 px-4 py-3 border-b border-slate-800">
+                  <h4 className="text-slate-200 font-medium truncate">{app.field?.name || 'Unknown Field'}</h4>
+                  <StatusChip status={app.status} />
+                </div>
+                <div className="px-4 py-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-2">
+                    <div className="min-w-0">
+                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Crop</div>
+                      <div className="text-slate-200 text-sm font-medium truncate">{app.crop}</div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Amount</div>
+                      <div className="text-green-400 font-semibold text-sm truncate">${app.requestedAmount}</div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Planting Date</div>
+                      <div className="text-slate-200 text-sm font-medium">{new Date(app.plantingDate).toLocaleDateString()}</div>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-slate-400 text-[11px] uppercase tracking-wide">Applied</div>
+                      <div className="text-slate-200 text-sm font-medium">{new Date(app.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {app.purpose && (
+                      <span className="inline-flex items-center rounded-full bg-slate-700/60 text-slate-200 px-2 py-0.5 text-xs max-w-full truncate" title={app.purpose}>{app.purpose}</span>
+                    )}
+                    {app.climascoreSnapshot?.climascore && (
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        app.climascoreSnapshot.climascore >= 67
+                          ? 'bg-green-500/15 text-green-400'
+                          : app.climascoreSnapshot.climascore >= 34
+                          ? 'bg-yellow-500/15 text-yellow-400'
+                          : 'bg-red-500/15 text-red-400'
+                      }`}>
+                        ClimaScore: {app.climascoreSnapshot.climascore}
+                      </span>
+                    )}
                   </div>
                 </div>
-                <div style={{ padding: 16 }}>
-                  <div className="row" style={{ marginBottom: 8 }}>
-                    <div className="col">
-                      <div className="muted small">Crop</div>
-                      <div>{app.crop}</div>
-                    </div>
-                    <div className="col">
-                      <div className="muted small">Amount</div>
-                      <div style={{ fontWeight: 'bold', color: '#22c55e' }}>${app.requestedAmount}</div>
-                    </div>
-                  </div>
-                  <div className="row" style={{ marginBottom: 8 }}>
-                    <div className="col">
-                      <div className="muted small">Planting Date</div>
-                      <div>{new Date(app.plantingDate).toLocaleDateString()}</div>
-                    </div>
-                    <div className="col">
-                      <div className="muted small">Applied</div>
-                      <div>{new Date(app.createdAt).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                  {app.purpose && (
-                    <div style={{ marginBottom: 8 }}>
-                      <div className="muted small">Purpose</div>
-                      <div className="pill low">{app.purpose}</div>
-                    </div>
-                  )}
-                  {app.climascoreSnapshot?.climascore && (
-                    <div style={{ marginBottom: 8 }}>
-                      <div className="muted small">ClimaScore</div>
-                      <div style={{ fontWeight: 'bold', color: app.climascoreSnapshot.climascore >= 67 ? '#22c55e' : app.climascoreSnapshot.climascore >= 34 ? '#eab308' : '#ef4444' }}>
-                        {app.climascoreSnapshot.climascore}
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="card-footer">
-                  <div className="row" style={{ gap: 8 }}>
-                    <button className="btn btn-secondary btn-sm" onClick={() => openApplicationDetails(app)}>
+                <div className="px-4 py-3 border-t border-slate-800">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5"
+                      onClick={() => openApplicationDetails(app)}
+                    >
                       View Details
                     </button>
                     {app.status === 'draft' && (
-                      <button className="btn btn-primary btn-sm" onClick={() => alert('Edit functionality coming soon')}>
+                      <button
+                        className="inline-flex items-center rounded-md border border-blue-600/50 bg-blue-600/20 hover:bg-blue-600/30 text-blue-100 text-xs px-2.5 py-1.5"
+                        onClick={() => alert('Edit functionality coming soon')}
+                      >
                         Edit
                       </button>
                     )}
                     {(app.status === 'denied' || app.status === 'draft') && (
-                      <button className="btn btn-secondary btn-sm" onClick={() => duplicateApplication(app)}>
+                      <button
+                        className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800/50 hover:bg-slate-700 text-slate-200 text-xs px-2.5 py-1.5"
+                        onClick={() => duplicateApplication(app)}
+                      >
                         Duplicate
                       </button>
                     )}
                     {app.status === 'draft' && (
-                      <button className="btn btn-danger btn-sm" onClick={() => deleteApplication(app._id)}>
+                      <button
+                        className="inline-flex items-center rounded-md border border-red-600/50 bg-red-600/20 hover:bg-red-600/30 text-red-100 text-xs px-2.5 py-1.5"
+                        onClick={() => deleteApplication(app._id)}
+                      >
                         Delete
                       </button>
                     )}
@@ -235,161 +264,103 @@ export default function FarmerApplications() {
       )}
 
       {/* Modal Backdrop */}
-      <div id="modal-backdrop" style={{
-        display: 'none',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        zIndex: 998
-      }} onClick={() => {
-        document.getElementById('app-details-modal').close()
-        document.getElementById('modal-backdrop').style.display = 'none'
-      }} />
+      <div
+        id="modal-backdrop"
+        className="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[998]"
+        onClick={() => {
+          document.getElementById('app-details-modal')?.close()
+          document.getElementById('modal-backdrop')?.classList.add('hidden')
+        }}
+      />
 
       {/* Application Details Modal */}
-      <dialog id="app-details-modal" style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        margin: 0,
-        padding: 0,
-        border: 'none',
-        borderRadius: '10px',
-        backgroundColor: 'transparent',
-        maxHeight: '90vh',
-        maxWidth: '90vw',
-        width: 'auto',
-        zIndex: 999
-      }}>
-        <div className="modal-card" style={{
-          minWidth: 'min(600px, 90vw)',
-          maxWidth: 'min(800px, 90vw)',
-          maxHeight: '85vh',
-          overflowY: 'auto',
-          backgroundColor: 'rgba(16, 24, 40, 0.95)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(31, 42, 68, 0.8)',
-          borderRadius: '10px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(31, 42, 68, 0.3)',
-          color: '#e7ecf6',
-          position: 'relative'
-        }}>
+      <dialog
+        id="app-details-modal"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 p-0 border-0 bg-transparent z-[999] max-h-[90vh] max-w-[90vw] w-auto"
+      >
+        <div className="rounded-xl border border-slate-800 bg-slate-900/95 text-slate-100 shadow-2xl relative overflow-y-auto max-h-[85vh] w-full max-w-[90vw] md:max-w-[800px] sm:min-w-[600px] backdrop-blur-2xl">
           {/* Fixed Close Button */}
           <button 
             type="button" 
             onClick={() => {
-              document.getElementById('app-details-modal').close()
-              document.getElementById('modal-backdrop').style.display = 'none'
+              document.getElementById('app-details-modal')?.close()
+              document.getElementById('modal-backdrop')?.classList.add('hidden')
             }}
-            style={{
-              position: 'sticky',
-              top: '8px',
-              left: '100%',
-              transform: 'translateX(-100%)',
-              marginLeft: '-16px',
-              marginBottom: '-32px',
-              zIndex: 1000,
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              border: '1px solid rgba(31, 42, 68, 0.8)',
-              backgroundColor: 'rgba(16, 24, 40, 0.9)',
-              color: '#e7ecf6',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}
+            className="sticky top-2 ml-auto mr-2 mb-0 z-10 w-8 h-8 rounded-full border border-slate-700 bg-slate-900/90 text-slate-100 flex items-center justify-center text-sm font-bold"
           >
             ✕
           </button>
-          <div className="modal-header">
-            <div className="modal-title">Application Details</div>
+          <div className="px-4 pb-2">
+            <div className="text-lg font-semibold">Application Details</div>
           </div>
           {selectedApp && (
             <div>
-              <div className="row" style={{ marginBottom: 16 }}>
-                <div className="col">
-                  <div className="card">
-                    <div className="card-header">
-                      <div className="row" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h4>Application Overview</h4>
-                        <StatusChip status={selectedApp.status} />
+              <div className="mb-4">
+                <div className="rounded-lg border border-slate-800 bg-slate-900/70">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
+                    <h4 className="text-slate-200 font-medium">Application Overview</h4>
+                    <StatusChip status={selectedApp.status} />
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1 text-sm">
+                        <div><span className="font-semibold">Field:</span> {selectedApp.field?.name || 'Unknown'}</div>
+                        <div><span className="font-semibold">Crop:</span> {selectedApp.crop}</div>
+                        <div><span className="font-semibold">Requested Amount:</span> <span className="text-green-400 font-semibold">${selectedApp.requestedAmount}</span></div>
+                      </div>
+                      <div className="space-y-1 text-sm">
+                        <div><span className="font-semibold">Planting Date:</span> {new Date(selectedApp.plantingDate).toLocaleDateString()}</div>
+                        <div><span className="font-semibold">Applied On:</span> {new Date(selectedApp.createdAt).toLocaleDateString()}</div>
+                        {selectedApp.expectedHarvest && (
+                          <div><span className="font-semibold">Expected Harvest:</span> {new Date(selectedApp.expectedHarvest).toLocaleDateString()}</div>
+                        )}
                       </div>
                     </div>
-                    <div style={{ padding: 16 }}>
-                      <div className="row">
-                        <div className="col">
-                          <div><strong>Field:</strong> {selectedApp.field?.name || 'Unknown'}</div>
-                          <div><strong>Crop:</strong> {selectedApp.crop}</div>
-                          <div><strong>Requested Amount:</strong> <span style={{ color: '#22c55e', fontWeight: 'bold' }}>${selectedApp.requestedAmount}</span></div>
-                        </div>
-                        <div className="col">
-                          <div><strong>Planting Date:</strong> {new Date(selectedApp.plantingDate).toLocaleDateString()}</div>
-                          <div><strong>Applied On:</strong> {new Date(selectedApp.createdAt).toLocaleDateString()}</div>
-                          {selectedApp.expectedHarvest && (
-                            <div><strong>Expected Harvest:</strong> {new Date(selectedApp.expectedHarvest).toLocaleDateString()}</div>
-                          )}
-                        </div>
+                    {selectedApp.purpose && (
+                      <div className="mt-3 text-sm">
+                        <div><span className="font-semibold">Purpose:</span> {selectedApp.purpose}</div>
                       </div>
-                      {selectedApp.purpose && (
-                        <div style={{ marginTop: 12 }}>
-                          <div><strong>Purpose:</strong> {selectedApp.purpose}</div>
-                        </div>
-                      )}
-                      {selectedApp.notes && (
-                        <div style={{ marginTop: 12 }}>
-                          <div><strong>Notes:</strong></div>
-                          <div className="muted" style={{ marginTop: 4, padding: 8, backgroundColor: '#f8f9fa', borderRadius: 4 }}>
-                            {selectedApp.notes}
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    )}
+                    {selectedApp.notes && (
+                      <div className="mt-3 text-sm">
+                        <div className="font-semibold">Notes:</div>
+                        <div className="mt-1 px-2 py-2 rounded bg-slate-800/70 text-slate-300">{selectedApp.notes}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
 
               {selectedApp.climascoreSnapshot && (
-                <div className="row" style={{ marginBottom: 16 }}>
-                  <div className="col">
-                    <div className="card">
-                      <div className="card-header"><h4>ClimaScore Assessment</h4></div>
-                      <div style={{ padding: 16 }}>
-                        <div className="row">
-                          <div className="col">
-                            <div><strong>ClimaScore:</strong> 
-                              <span style={{ 
-                                color: selectedApp.climascoreSnapshot.climascore >= 67 ? '#22c55e' : 
-                                       selectedApp.climascoreSnapshot.climascore >= 34 ? '#eab308' : '#ef4444',
-                                fontWeight: 'bold',
-                                fontSize: '1.2em',
-                                marginLeft: 8
-                              }}>
-                                {selectedApp.climascoreSnapshot.climascore}
-                              </span>
-                            </div>
-                            {selectedApp.climascoreSnapshot.riskLevel && (
-                              <div><strong>Risk Level:</strong> {selectedApp.climascoreSnapshot.riskLevel}</div>
-                            )}
+                <div className="mb-4">
+                  <div className="rounded-lg border border-slate-800 bg-slate-900/70">
+                    <div className="px-4 py-3 border-b border-slate-800"><h4 className="text-slate-200 font-medium">ClimaScore Assessment</h4></div>
+                    <div className="px-4 py-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">ClimaScore:</span>
+                            <span className={`font-semibold text-base ${
+                              selectedApp.climascoreSnapshot.climascore >= 67
+                                ? 'text-green-400'
+                                : selectedApp.climascoreSnapshot.climascore >= 34
+                                ? 'text-yellow-400'
+                                : 'text-red-400'
+                            }`}>
+                              {selectedApp.climascoreSnapshot.climascore}
+                            </span>
                           </div>
-                          <div className="col">
-                            {selectedApp.climascoreSnapshot.weatherScore && (
-                              <div><strong>Weather Score:</strong> {selectedApp.climascoreSnapshot.weatherScore}</div>
-                            )}
-                            {selectedApp.climascoreSnapshot.soilScore && (
-                              <div><strong>Soil Score:</strong> {selectedApp.climascoreSnapshot.soilScore}</div>
-                            )}
-                          </div>
+                          {selectedApp.climascoreSnapshot.riskLevel && (
+                            <div><span className="font-semibold">Risk Level:</span> {selectedApp.climascoreSnapshot.riskLevel}</div>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {selectedApp.climascoreSnapshot.weatherScore && (
+                            <div><span className="font-semibold">Weather Score:</span> {selectedApp.climascoreSnapshot.weatherScore}</div>
+                          )}
+                          {selectedApp.climascoreSnapshot.soilScore && (
+                            <div><span className="font-semibold">Soil Score:</span> {selectedApp.climascoreSnapshot.soilScore}</div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -398,23 +369,22 @@ export default function FarmerApplications() {
               )}
 
               {selectedApp.lenderNotes && (
-                <div className="row" style={{ marginBottom: 16 }}>
-                  <div className="col">
-                    <div className="card">
-                      <div className="card-header"><h4>Lender Feedback</h4></div>
-                      <div style={{ padding: 16 }}>
-                        <div className="muted" style={{ padding: 8, backgroundColor: '#f8f9fa', borderRadius: 4 }}>
-                          {selectedApp.lenderNotes}
-                        </div>
-                      </div>
+                <div className="mb-4">
+                  <div className="rounded-lg border border-slate-800 bg-slate-900/70">
+                    <div className="px-4 py-3 border-b border-slate-800"><h4 className="text-slate-200 font-medium">Lender Feedback</h4></div>
+                    <div className="px-4 py-3 text-sm">
+                      <div className="px-2 py-2 rounded bg-slate-800/70 text-slate-300">{selectedApp.lenderNotes}</div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="row" style={{ justifyContent: 'flex-end', gap: 8 }}>
+              <div className="flex justify-end gap-2 px-1 pb-4">
                 {selectedApp.status === 'denied' && (
-                  <button className="btn btn-primary" onClick={() => duplicateApplication(selectedApp)}>
+                  <button
+                    className="inline-flex items-center rounded-md border border-blue-600/50 bg-blue-600/20 hover:bg-blue-600/30 text-blue-100 text-sm px-3 py-1.5"
+                    onClick={() => duplicateApplication(selectedApp)}
+                  >
                     Reapply
                   </button>
                 )}
@@ -425,76 +395,31 @@ export default function FarmerApplications() {
       </dialog>
 
       {/* Success Modal Backdrop */}
-      <div id="success-modal-backdrop" style={{
-        display: 'none',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(11, 15, 26, 0.85)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        zIndex: 1000
-      }} />
+      <div
+        id="success-modal-backdrop"
+        className="hidden fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[1000]"
+      />
 
       {/* Success Modal */}
-      <dialog id="success-modal" style={{
-        position: 'fixed',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        margin: 0,
-        padding: 0,
-        border: 'none',
-        borderRadius: '12px',
-        backgroundColor: 'transparent',
-        zIndex: 1001
-      }}>
-        <div style={{
-          backgroundColor: 'rgba(16, 24, 40, 0.95)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(31, 42, 68, 0.8)',
-          borderRadius: '12px',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
-          color: '#e7ecf6',
-          padding: '32px',
-          minWidth: '400px',
-          maxWidth: '500px',
-          textAlign: 'center'
-        }}>
+      <dialog
+        id="success-modal"
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 m-0 p-0 border-0 bg-transparent z-[1001]"
+      >
+        <div className="bg-slate-900/95 border border-slate-800 rounded-xl shadow-2xl text-slate-100 p-8 min-w-[320px] sm:min-w-[380px] md:min-w-[400px] max-w-[520px] text-center backdrop-blur-xl">
           {/* Success Icon */}
-          <div style={{
-            width: '64px',
-            height: '64px',
-            borderRadius: '50%',
-            backgroundColor: 'rgba(34, 197, 94, 0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 24px auto',
-            fontSize: '32px'
-          }}>
-            ✓
-          </div>
-          
-          <h3 style={{ margin: '0 0 16px 0', color: '#22c55e' }}>Success!</h3>
-          <p style={{ margin: '0 0 24px 0', color: '#94a3b8' }}>
-            {successMessage}
-          </p>
-          
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button 
-              className="btn btn-primary"
+          <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-6 text-3xl">✓</div>
+          <h3 className="text-green-400 text-lg font-semibold mb-3">Success!</h3>
+          <p className="text-slate-400 mb-6">{successMessage}</p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              className="inline-flex items-center rounded-md bg-blue-600/90 hover:bg-blue-600 text-white text-sm px-4 py-2 min-w-[120px]"
               onClick={() => {
                 document.getElementById('success-modal')?.close()
-                document.getElementById('success-modal-backdrop').style.display = 'none'
+                document.getElementById('success-modal-backdrop')?.classList.add('hidden')
                 setShowSuccessModal(false)
                 // Refresh the applications list
                 loadApplications()
               }}
-              style={{ minWidth: '120px' }}
             >
               Continue
             </button>
