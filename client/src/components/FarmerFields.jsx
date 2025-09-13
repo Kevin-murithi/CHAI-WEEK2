@@ -311,7 +311,7 @@ export default function FarmerFields() {
       {error && <div className="error" style={{marginBottom:8}}>{error}</div>}
 
       {/* Fields List Section */}
-      <div className="row" style={{alignItems: 'stretch', gap: '24px'}}>
+      {/* <div className="row" style={{alignItems: 'stretch', gap: '24px'}}>
         <div className="col" style={{minWidth: 320}}>
           <div className="card">
             <div className="card-header"><h3>Your Fields</h3></div>
@@ -361,7 +361,7 @@ export default function FarmerFields() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Map View Section */}
       <div className="card" style={{marginBottom: 24}}>
