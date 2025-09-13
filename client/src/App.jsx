@@ -60,11 +60,32 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showForm, setShowForm] = useState(true)
+
+  // Responsive: on mobile start with hero first, hide the form until CTA tap
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setShowForm(!mq.matches ? true : false)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  function validate() {
+    const errs = { email: '', password: '' }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address'
+    if (!password) errs.password = 'Password is required'
+    setFieldErrors(errs)
+    return !errs.email && !errs.password
+  }
   async function onSubmit(e) {
     e.preventDefault()
     try { 
-      setLoading(true); setError(''); 
+      setLoading(true); setError('');
+      if (!validate()) return
       await login({ email, password })
       // navigate after login based on role
       const role = (user?.role) || 'farmer'
@@ -78,23 +99,52 @@ function Login() {
       navigate(user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
     }
   }, [user, navigate])
+  const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!password
   return (
     <div className="auth-wrapper">
-      <section className="auth-hero">
+      <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-hero-inner">
           <div className="brand" style={{marginBottom:12}}><div className="brand-badge">CS</div><span>ClimaScore</span></div>
           <div className="auth-title">Welcome back</div>
-          <div className="auth-sub">Sign in to manage your fields, view scores, and track applications.</div>
+          <div className="auth-sub">ClimaScore is an AI-powered platform that serves farmers and lenders with actionable climate intelligence.</div>
+          <ul className="hero-points" aria-label="Platform benefits">
+            <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span></li>
+            <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.</span></li>
+          </ul>
+          <span className="hero-caption">Secure. Transparent. Built for agriculture.</span>
+          <div className="cta mobile-only">
+            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>
+            <Link to="/register" className="btn btn-secondary">Create account</Link>
+          </div>
         </div>
       </section>
-      <section className="auth-card">
+      <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
           <h2 style={{marginBottom:12}}>Sign in</h2>
-          <form className="form" onSubmit={onSubmit}>
-            <div className="row"><div className="col"><label>Email</label><input type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} required /></div></div>
-            <div className="row"><div className="col"><label>Password</label><input type="password" placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)} required /></div></div>
+          <form className="form" onSubmit={onSubmit} noValidate>
+            <div className="row">
+              <div className="col">
+                <label>Email</label>
+                <input type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} aria-invalid={!!fieldErrors.email} />
+                {fieldErrors.email && <div className="input-error">{fieldErrors.email}</div>}
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <label>Password</label>
+                <div className="password-field">
+                  <input type={showPassword? 'text':'password'} placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)} aria-invalid={!!fieldErrors.password} />
+                  <button type="button" className="password-toggle" onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Hide':'Show'}</button>
+                </div>
+                {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
+              </div>
+            </div>
             {error && <div className="error">{error}</div>}
-            <div className="row"><div className="col end"><button className="btn btn-primary" disabled={loading}>{loading?'Logging in...':'Login'}</button></div></div>
+            <div className="form-actions">
+              <button className={`btn btn-primary${loading ? ' loading' : ''}`} aria-busy={loading} disabled={!isValid || loading}>
+                {loading ? 'Logging in' : 'Login'}{loading && <span className="spinner" />}
+              </button>
+            </div>
           </form>
           <div className="auth-footer">Don't have an account? <Link to="/register">Create one</Link></div>
         </div>
@@ -109,11 +159,31 @@ function Register() {
   const [form, setForm] = useState({ email:'', password:'', firstName:'', lastName:'', role:'farmer' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState({ firstName:'', lastName:'', email:'', password:'' })
+  const [showPassword, setShowPassword] = useState(false)
+  const [showForm, setShowForm] = useState(true)
   function setField(k,v){ setForm(prev=>({ ...prev, [k]: v })) }
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const update = () => setShowForm(!mq.matches ? true : false)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+  function validate(){
+    const errs = { firstName:'', lastName:'', email:'', password:'' }
+    if (!form.firstName.trim()) errs.firstName = 'First name is required'
+    if (!form.lastName.trim()) errs.lastName = 'Last name is required'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address'
+    if (form.password.length < 6) errs.password = 'Password should be at least 6 characters'
+    setFieldErrors(errs)
+    return !errs.firstName && !errs.lastName && !errs.email && !errs.password
+  }
   async function onSubmit(e) { 
     e.preventDefault(); 
     try { 
-      setLoading(true); setError(''); 
+      setLoading(true); setError('');
+      if (!validate()) return
       await register(form) 
       const role = (user?.role) || form.role || 'farmer'
       navigate(role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
@@ -126,24 +196,63 @@ function Register() {
       navigate(user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
     }
   }, [user, navigate])
+  const isValid = !!form.firstName.trim() && !!form.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.password.length >= 6
   return (
     <div className="auth-wrapper">
-      <section className="auth-hero">
+      <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-hero-inner">
           <div className="brand" style={{marginBottom:12}}><div className="brand-badge">CS</div><span>ClimaScore</span></div>
           <div className="auth-title">Create your account</div>
-          <div className="auth-sub">Join as a Farmer or a Lender and get climate risk insights tailored to your needs.</div>
+          <div className="auth-sub">Join ClimaScore to put AI-driven climate intelligence to work.</div>
+          <ul className="hero-points" aria-label="Platform benefits">
+            <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Personalized advisories, field monitoring, and financing access.</span></li>
+            <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Objective climate scoring and portfolio risk visibility.</span></li>
+          </ul>
+          <span className="hero-caption">Built for resilience. Powered by data.</span>
+          <div className="cta mobile-only">
+            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>
+            <Link to="/login" className="btn btn-secondary">Sign in</Link>
+          </div>
         </div>
       </section>
-      <section className="auth-card">
+      <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
           <h2 style={{marginBottom:12}}>Sign up</h2>
-          <form className="form" onSubmit={onSubmit}>
-            <div className="row"><div className="col"><label>First Name</label><input placeholder="Jane" value={form.firstName} onChange={e=>setField('firstName', e.target.value)} required/></div><div className="col"><label>Last Name</label><input placeholder="Doe" value={form.lastName} onChange={e=>setField('lastName', e.target.value)} required/></div></div>
-            <div className="row"><div className="col"><label>Email</label><input type="email" placeholder="you@example.com" value={form.email} onChange={e=>setField('email', e.target.value)} required/></div><div className="col"><label>Password</label><input type="password" placeholder="Create a strong password" value={form.password} onChange={e=>setField('password', e.target.value)} required/></div></div>
+          <form className="form" onSubmit={onSubmit} noValidate>
+            <div className="row">
+              <div className="col">
+                <label>First Name</label>
+                <input placeholder="Jane" value={form.firstName} onChange={e=>setField('firstName', e.target.value)} aria-invalid={!!fieldErrors.firstName} />
+                {fieldErrors.firstName && <div className="input-error">{fieldErrors.firstName}</div>}
+              </div>
+              <div className="col">
+                <label>Last Name</label>
+                <input placeholder="Doe" value={form.lastName} onChange={e=>setField('lastName', e.target.value)} aria-invalid={!!fieldErrors.lastName} />
+                {fieldErrors.lastName && <div className="input-error">{fieldErrors.lastName}</div>}
+              </div>
+            </div>
+            <div className="row">
+              <div className="col">
+                <label>Email</label>
+                <input type="email" placeholder="you@example.com" value={form.email} onChange={e=>setField('email', e.target.value)} aria-invalid={!!fieldErrors.email} />
+                {fieldErrors.email && <div className="input-error">{fieldErrors.email}</div>}
+              </div>
+              <div className="col">
+                <label>Password</label>
+                <div className="password-field">
+                  <input type={showPassword? 'text':'password'} placeholder="Create a strong password" value={form.password} onChange={e=>setField('password', e.target.value)} aria-invalid={!!fieldErrors.password} />
+                  <button type="button" className="password-toggle" onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Hide':'Show'}</button>
+                </div>
+                {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
+              </div>
+            </div>
             <div className="row"><div className="col"><label>Account Type</label><select value={form.role} onChange={e=>setField('role', e.target.value)}><option value="farmer">Farmer</option><option value="lender">Lender</option></select></div></div>
             {error && <div className="error">{error}</div>}
-            <div className="row"><div className="col end"><button className="btn btn-primary" disabled={loading}>{loading?'Creating...':'Create Account'}</button></div></div>
+            <div className="form-actions">
+              <button className={`btn btn-primary${loading ? ' loading' : ''}`} aria-busy={loading} disabled={!isValid || loading}>
+                {loading ? 'Creating' : 'Create Account'}{loading && <span className="spinner" />}
+              </button>
+            </div>
           </form>
           <div className="auth-footer">Already have an account? <Link to="/login">Sign in</Link></div>
         </div>
