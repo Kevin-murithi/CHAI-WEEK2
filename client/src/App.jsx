@@ -10,6 +10,7 @@ import LenderConsole from './components/LenderConsole.jsx'
 import FarmerHome from './pages/FarmerHome.jsx'
 import FarmerFieldsPage from './pages/FarmerFieldsPage.jsx'
 import FarmerFinancing from './pages/FarmerFinancing.jsx'
+import FarmerApplications from './pages/FarmerApplications.jsx'
 import FarmerAdvisory from './pages/FarmerAdvisory.jsx'
 import FarmerResources from './pages/FarmerResources.jsx'
 import LenderExecutive from './pages/LenderExecutive.jsx'
@@ -376,8 +377,8 @@ function FarmerLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const items = [
     { to: '/dashboard/farmer/home', label: 'Home / Field Overview', icon: 'home' },
-    { to: '/dashboard/farmer/fields', label: 'My Fields & Crops', icon: 'fields' },
-    { to: '/dashboard/farmer/financing', label: 'Financing Center', icon: 'finance' },
+    { to: '/dashboard/farmer/fields', label: 'My Fields & Financing', icon: 'fields' },
+    { to: '/dashboard/farmer/applications', label: 'My Applications', icon: 'application' },
     { to: '/dashboard/farmer/advisory', label: 'Advisory Feed', icon: 'advisory' },
     { to: '/dashboard/farmer/resources', label: 'Resources & Learning', icon: 'resources' },
   ]
@@ -442,7 +443,7 @@ function App() {
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<FarmerHome />} />
             <Route path="fields" element={<FarmerFieldsPage />} />
-            <Route path="financing" element={<FarmerFinancing />} />
+            <Route path="applications" element={<FarmerApplications />} />
             <Route path="advisory" element={<FarmerAdvisory />} />
             <Route path="resources" element={<FarmerResources />} />
           </Route>
