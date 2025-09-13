@@ -289,16 +289,19 @@ export default function FarmerFields() {
     try {
       setSavingDraft(true)
       setError('')
-      const resp = await fetch('http://localhost:3000/api/farmer/applications/draft', {
+      const resp = await fetch('http://localhost:3000/api/farmer/applications', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ ...form, status: 'draft' })
       })
       if (!resp.ok) throw new Error('Failed to save draft')
+      await load()
       alert('Application saved as draft')
       const modal = document.getElementById('apply-modal')
       if (modal) modal.close()
+      const backdrop = document.getElementById('modal-backdrop')
+      if (backdrop) backdrop.style.display = 'none'
     } catch (e) {
       setError(e.message)
     } finally {
@@ -587,7 +590,7 @@ export default function FarmerFields() {
         width: 'auto',
         zIndex: 999
       }}>
-        <div className="modal-card" style={{
+        <form className="modal-card" onSubmit={submitApplication} style={{
           minWidth: 'min(500px, 90vw)', 
           maxWidth: 'min(700px, 90vw)', 
           maxHeight: '85vh', 
@@ -659,14 +662,14 @@ export default function FarmerFields() {
             <textarea rows="3" placeholder="Any additional information about your funding request..." onChange={e=>setForm(prev=>({...prev, notes: e.target.value}))} style={{width: '100%', resize: 'vertical'}}></textarea>
           </div>
           <div className="form-actions" style={{display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 8}}>
-            <button type="button" className="btn btn-secondary" onClick={saveDraft} disabled={savingDraft}>
+            {/* <button type="button" className="btn btn-secondary" onClick={saveDraft} disabled={savingDraft}>
               {savingDraft ? 'Saving...' : 'Save as Draft'}
-            </button>
-            <button className="btn btn-primary" disabled={submitting}>
+            </button> */}
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
               {submitting ? 'Submitting...' : 'Submit Application'}
             </button>
           </div>
-        </div>
+        </form>
       </dialog>
 
       <dialog id="sensor-modal" style={{
