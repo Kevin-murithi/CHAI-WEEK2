@@ -59,6 +59,7 @@ export default function LenderConsole() {
       if (sres.ok) {
         const sdata = await sres.json(); setSensors(sdata.readings || [])
       } else { setSensors([]) }
+      document.getElementById('lender-modal-backdrop').style.display = 'block'
       const el = document.getElementById('review-modal')
       if (el) el.showModal()
     } catch (e) {
@@ -75,6 +76,7 @@ export default function LenderConsole() {
       })
       if (!resp.ok) throw new Error('Failed to submit decision')
       document.getElementById('review-modal')?.close()
+      document.getElementById('lender-modal-backdrop').style.display = 'none'
       setSelected(null)
       reload()
     } catch (e) {
@@ -162,8 +164,83 @@ export default function LenderConsole() {
         </div>
       </div>
 
-      <dialog id="review-modal" style={{padding:0, border:'none', borderRadius:12}}>
-        <form className="card" onSubmit={submitDecision} method="dialog" style={{minWidth: 520}}>
+      {/* Modal Backdrop */}
+      <div id="lender-modal-backdrop" style={{
+        display: 'none',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 998
+      }} onClick={() => {
+        document.getElementById('review-modal').close()
+        document.getElementById('lender-modal-backdrop').style.display = 'none'
+      }} />
+
+      <dialog id="review-modal" style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        margin: 0,
+        padding: 0,
+        border: 'none',
+        borderRadius: '10px',
+        backgroundColor: 'transparent',
+        maxHeight: '90vh',
+        maxWidth: '90vw',
+        width: 'auto',
+        zIndex: 999
+      }}>
+        <form className="card" onSubmit={submitDecision} method="dialog" style={{
+          minWidth: 'min(520px, 90vw)',
+          maxWidth: 'min(700px, 90vw)',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          backgroundColor: 'rgba(16, 24, 40, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(31, 42, 68, 0.8)',
+          borderRadius: '10px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(31, 42, 68, 0.3)',
+          color: '#e7ecf6',
+          position: 'relative'
+        }}>
+          {/* Fixed Close Button */}
+          <button 
+            type="button" 
+            onClick={() => {
+              document.getElementById('review-modal').close()
+              document.getElementById('lender-modal-backdrop').style.display = 'none'
+            }}
+            style={{
+              position: 'sticky',
+              top: '8px',
+              left: '100%',
+              transform: 'translateX(-100%)',
+              marginLeft: '-16px',
+              marginBottom: '-32px',
+              zIndex: 1000,
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: '1px solid rgba(31, 42, 68, 0.8)',
+              backgroundColor: 'rgba(16, 24, 40, 0.9)',
+              color: '#e7ecf6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✕
+          </button>
           <div className="card-header"><h3>Review Application</h3></div>
           {selected && (
             <>
@@ -216,7 +293,6 @@ export default function LenderConsole() {
             </>
           )}
           <div className="row" style={{marginTop:8}}>
-            <div className="col"><button type="button" className="link" onClick={()=>document.getElementById('review-modal').close()}>Close</button></div>
             <div className="col end"><button>Submit Decision</button></div>
           </div>
         </form>

@@ -88,6 +88,7 @@ export default function FarmerApplications() {
 
   function openApplicationDetails(app) {
     setSelectedApp(app)
+    document.getElementById('modal-backdrop').style.display = 'block'
     document.getElementById('app-details-modal')?.showModal()
   }
 
@@ -217,12 +218,86 @@ export default function FarmerApplications() {
         </div>
       )}
 
+      {/* Modal Backdrop */}
+      <div id="modal-backdrop" style={{
+        display: 'none',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        zIndex: 998
+      }} onClick={() => {
+        document.getElementById('app-details-modal').close()
+        document.getElementById('modal-backdrop').style.display = 'none'
+      }} />
+
       {/* Application Details Modal */}
-      <dialog id="app-details-modal">
-        <div className="modal-card" style={{ minWidth: 600, maxWidth: 800 }}>
+      <dialog id="app-details-modal" style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        margin: 0,
+        padding: 0,
+        border: 'none',
+        borderRadius: '10px',
+        backgroundColor: 'transparent',
+        maxHeight: '90vh',
+        maxWidth: '90vw',
+        width: 'auto',
+        zIndex: 999
+      }}>
+        <div className="modal-card" style={{
+          minWidth: 'min(600px, 90vw)',
+          maxWidth: 'min(800px, 90vw)',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          backgroundColor: 'rgba(16, 24, 40, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(31, 42, 68, 0.8)',
+          borderRadius: '10px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(31, 42, 68, 0.3)',
+          color: '#e7ecf6',
+          position: 'relative'
+        }}>
+          {/* Fixed Close Button */}
+          <button 
+            type="button" 
+            onClick={() => {
+              document.getElementById('app-details-modal').close()
+              document.getElementById('modal-backdrop').style.display = 'none'
+            }}
+            style={{
+              position: 'sticky',
+              top: '8px',
+              left: '100%',
+              transform: 'translateX(-100%)',
+              marginLeft: '-16px',
+              marginBottom: '-32px',
+              zIndex: 1000,
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: '1px solid rgba(31, 42, 68, 0.8)',
+              backgroundColor: 'rgba(16, 24, 40, 0.9)',
+              color: '#e7ecf6',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            ✕
+          </button>
           <div className="modal-header">
             <div className="modal-title">Application Details</div>
-            <button type="button" className="modal-close" aria-label="Close" onClick={() => document.getElementById('app-details-modal').close()}>✕</button>
           </div>
           {selectedApp && (
             <div>
@@ -327,9 +402,6 @@ export default function FarmerApplications() {
                     Reapply
                   </button>
                 )}
-                <button className="btn btn-secondary" onClick={() => document.getElementById('app-details-modal').close()}>
-                  Close
-                </button>
               </div>
             </div>
           )}
