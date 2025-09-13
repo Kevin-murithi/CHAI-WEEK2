@@ -104,21 +104,34 @@ function Login() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner" style={{textAlign:'center'}}>
-          <ClimaScoreLogo size={56} className="mb-3" />
-          <div className="auth-title">Welcome back</div>
+        <div className="auth-hero-inner">
+          <div style={{textAlign:'center'}}>
+            <ClimaScoreLogo size={56} className="mb-3" />
+            <div className="auth-title">Welcome back</div>
+          </div>
           <div className="auth-sub">ClimaScore is an AI-powered platform that serves farmers and lenders with actionable climate intelligence.</div>
           <ul className="hero-points" aria-label="Platform benefits">
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span></li>
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.</span></li>
+            <li>
+              <span className="dot" aria-hidden="true"></span>
+              <span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span>
+            </li>
+            
+            <li>
+              <span className="dot" aria-hidden="true"></span>
+              <span>
+                <strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.
+              </span>
+            </li>
           </ul>
+
           <span className="hero-caption">Secure. Transparent. Built for agriculture.</span>
-          <div className="cta mobile-only">
-            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>
+          <div className="cta">
+            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>}
             <Link to="/register" className="btn btn-secondary">Create account</Link>
           </div>
         </div>
       </section>
+      
       <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
           <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
@@ -204,17 +217,19 @@ function Register() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner" style={{textAlign:'center'}}>
-          <ClimaScoreLogo size={96} className="mb-3" />
-          <div className="auth-title">Create your account</div>
+        <div className="auth-hero-inner">
+          <div style={{textAlign:'center'}}>
+            <ClimaScoreLogo size={96} className="mb-3" />
+            <div className="auth-title">Create your account</div>
+          </div>
           <div className="auth-sub">Join ClimaScore to put AI-driven climate intelligence to work.</div>
           <ul className="hero-points" aria-label="Platform benefits">
             <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Personalized advisories, field monitoring, and financing access.</span></li>
             <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Objective climate scoring and portfolio risk visibility.</span></li>
           </ul>
           <span className="hero-caption">Built for resilience. Powered by data.</span>
-          <div className="cta mobile-only">
-            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>
+          <div className="cta">
+            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>}
             <Link to="/login" className="btn btn-secondary">Sign in</Link>
           </div>
         </div>
@@ -226,7 +241,7 @@ function Register() {
             <ClimaScoreLogo size={36} className="mb-2" />
             <h2 style={{marginBottom:12}}>Sign up</h2>
           </div>
-          
+
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="row">
               <div className="col">

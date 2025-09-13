@@ -93,8 +93,11 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 .auth-hero .brand-badge { width: 24px; height: 24px; }
 .auth-title { font-size: 22px; font-weight: 800; margin-bottom: var(--space-2); }
 .auth-sub { color: var(--muted); font-size: 12px; }
-.hero-points { margin-top: 14px; padding-left: 0; list-style: none; display: grid; gap: 8px; }
-.hero-points li { display: grid; grid-template-columns: 20px 1fr; align-items: start; gap: 8px; color: #c1d2f7; font-size: 13px; }
+.hero-points { margin-top: 14px; padding-left: 0; list-style: none; }
+.hero-points li { display: grid; grid-template-columns: 20px 1fr; align-items: start; gap: 4px; color: #c1d2f7; font-size: 13px; }
+.hero-points li span:nth-child(2){
+  text-align:left;
+}
 .hero-points .dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; background: linear-gradient(90deg, #60a5fa, #22c55e); box-shadow: 0 0 10px rgba(99,102,241,0.35); }
 .hero-caption { margin-top: 14px; display: inline-block; font-size: 12px; color: #99a9cd; border: 1px solid #223154; background: rgba(12,21,41,0.6); padding: 6px 10px; border-radius: 999px; }
 .auth-card { display: flex; align-items: center; justify-content: center; padding: var(--space-3); }
@@ -105,8 +108,8 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 
 /* Mobile helpers for auth */
 .mobile-only { display: none; }
-/* Hide CTAs by default on larger screens */
-.auth-hero .cta { margin-top: 18px; display: none; gap: 10px; }
+/* Show CTAs on all screens; specific CTAs are controlled in JSX */
+.auth-hero .cta { margin-top: 24px; display: flex; gap: 10px; justify-content: center; }
 .password-field { position: relative; }
 .password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: #13203b; border: 1px solid #2a3b63; color: #cfe1ff; border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
 .input-error { color: #fecaca; font-size: 12px; margin-top: 6px; }
@@ -139,9 +142,9 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 .btn-secondary:hover { background: #13203b; }
 .btn + .btn { margin-left: var(--space-2); }
 
-/* Auth page buttons keep the gradient */
-.auth-panel .btn-primary { background: linear-gradient(135deg, rgba(34,197,94,0.55), rgba(59,130,246,0.20)); border: 1px solid rgba(34,197,94,0.6); color: #101827; backdrop-filter: blur(8px); box-shadow: 0 8px 18px rgba(16,185,129,0.22); }
-.auth-panel .btn-primary:hover:not([disabled]) { background: linear-gradient(135deg, rgba(34,197,94,0.7), rgba(59,130,246,0.25)); box-shadow: 0 10px 22px rgba(16,185,129,0.3); color: #0b1220; }
+/* Auth page buttons - blue theme to match app */
+.auth-panel .btn-primary { background: linear-gradient(135deg, rgba(37,99,235,0.85), rgba(30,64,175,0.85)); border: 1px solid rgba(59,130,246,0.6); color: #eaf2ff; backdrop-filter: blur(8px); box-shadow: 0 8px 18px rgba(59,130,246,0.25); }
+.auth-panel .btn-primary:hover:not([disabled]) { background: linear-gradient(135deg, rgba(59,130,246,0.95), rgba(29,78,216,0.95)); box-shadow: 0 10px 22px rgba(59,130,246,0.35); color: #ffffff; }
 .auth-panel .btn-primary[disabled] { opacity: 0.6; box-shadow: none; cursor: default; }
 
 /* Sidebar footer and logout button */
@@ -177,10 +180,10 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
   .hero-caption { font-size: 13px; }
   .auth-hero-inner { max-width: 520px; }
   .auth-hero .brand-badge { width: 28px; height: 28px; }
-  .auth-panel { padding: 24px; max-width: 420px; }
+  .auth-panel { padding: 24px; max-width: 480px; }
   .auth-panel h2 { font-size: 24px; }
   label { font-size: 14px; }
-  input, select { font-size: 15px; padding: 11px 14px; }
+  input, select { font-size: 15px; padding: 11px 14px; margin-bottom: 10px; }
   .btn { font-size: 14px; padding: 10px 14px; }
   .auth-footer { font-size: 14px; }
 }
