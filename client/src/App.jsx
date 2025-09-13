@@ -10,6 +10,7 @@ import LenderConsole from './components/LenderConsole.jsx'
 import FarmerHome from './pages/FarmerHome.jsx'
 import FarmerFieldsPage from './pages/FarmerFieldsPage.jsx'
 import FarmerFinancing from './pages/FarmerFinancing.jsx'
+import FarmerApplications from './pages/FarmerApplications.jsx'
 import FarmerAdvisory from './pages/FarmerAdvisory.jsx'
 import FarmerResources from './pages/FarmerResources.jsx'
 import LenderExecutive from './pages/LenderExecutive.jsx'
@@ -104,26 +105,39 @@ function Login() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner" style={{textAlign:'center'}}>
-          <ClimaScoreLogo size={56} className="mb-3" />
-          <div className="auth-title">Welcome back</div>
+        <div className="auth-hero-inner">
+          <div style={{textAlign:'center'}}>
+            <ClimaScoreLogo size={56} className="mb-3" />
+            <div className="auth-title">Welcome back</div>
+          </div>
           <div className="auth-sub">ClimaScore is an AI-powered platform that serves farmers and lenders with actionable climate intelligence.</div>
           <ul className="hero-points" aria-label="Platform benefits">
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span></li>
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.</span></li>
+            <li>
+              <span className="dot" aria-hidden="true"></span>
+              <span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span>
+            </li>
+            
+            <li>
+              <span className="dot" aria-hidden="true"></span>
+              <span>
+                <strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.
+              </span>
+            </li>
           </ul>
+
           <span className="hero-caption">Secure. Transparent. Built for agriculture.</span>
-          <div className="cta mobile-only">
-            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>
+          <div className="cta">
+            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>}
             <Link to="/register" className="btn btn-secondary">Create account</Link>
           </div>
         </div>
       </section>
+      
       <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
-          <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-            <ClimaScoreLogo size={36} className="mb-2" />
-            <h2 style={{marginBottom:12}}>Sign in</h2>
+          <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12}}>
+            <ClimaScoreLogo size={40} />
+            <h2 style={{margin:0}}>Sign in</h2>
           </div>
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="row">
@@ -138,7 +152,23 @@ function Login() {
                 <label>Password</label>
                 <div className="password-field">
                   <input type={showPassword? 'text':'password'} placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)} aria-invalid={!!fieldErrors.password} />
-                  <button type="button" className="password-toggle" onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Hide':'Show'}</button>
+                  <button type="button" className="password-toggle" aria-label={showPassword? 'Hide password':'Show password'} title={showPassword? 'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>
+                    {showPassword ? (
+                      // Eye-off icon
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.78 2.98-5.02 5.5-6.41"/>
+                        <path d="M1 1l22 22"/>
+                        <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.66 11.66 0 0 1-2.17 3.19"/>
+                      </svg>
+                    ) : (
+                      // Eye icon
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
                 </div>
                 {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
               </div>
@@ -204,17 +234,19 @@ function Register() {
   return (
     <div className="auth-wrapper">
       <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner" style={{textAlign:'center'}}>
-          <ClimaScoreLogo size={96} className="mb-3" />
-          <div className="auth-title">Create your account</div>
+        <div className="auth-hero-inner">
+          <div style={{textAlign:'center'}}>
+            <ClimaScoreLogo size={96} className="mb-3" />
+            <div className="auth-title">Create your account</div>
+          </div>
           <div className="auth-sub">Join ClimaScore to put AI-driven climate intelligence to work.</div>
           <ul className="hero-points" aria-label="Platform benefits">
             <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Personalized advisories, field monitoring, and financing access.</span></li>
             <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Objective climate scoring and portfolio risk visibility.</span></li>
           </ul>
           <span className="hero-caption">Built for resilience. Powered by data.</span>
-          <div className="cta mobile-only">
-            <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>
+          <div className="cta">
+            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>}
             <Link to="/login" className="btn btn-secondary">Sign in</Link>
           </div>
         </div>
@@ -222,11 +254,10 @@ function Register() {
 
       <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
         <div className="auth-panel">
-          <div style={{display:'flex', flexDirection:'column', alignItems:'center'}}>
-            <ClimaScoreLogo size={36} className="mb-2" />
-            <h2 style={{marginBottom:12}}>Sign up</h2>
+          <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12}}>
+            <ClimaScoreLogo size={48} />
+            <h2 style={{margin:0}}>Sign up</h2>
           </div>
-          
           <form className="form" onSubmit={onSubmit} noValidate>
             <div className="row">
               <div className="col">
@@ -249,8 +280,22 @@ function Register() {
               <div className="col">
                 <label>Password</label>
                 <div className="password-field">
-                  <input type={showPassword? 'text':'password'} placeholder="Create a strong password" value={form.password} onChange={e=>setField('password', e.target.value)} aria-invalid={!!fieldErrors.password} />
-                  <button type="button" className="password-toggle" onClick={()=>setShowPassword(v=>!v)}>{showPassword?'Hide':'Show'}</button>
+                  <input type={showPassword? 'text':'password'} placeholder="Create password" value={form.password} onChange={e=>setField('password', e.target.value)} aria-invalid={!!fieldErrors.password} />
+                  <button type="button" className="password-toggle" aria-label={showPassword? 'Hide password':'Show password'} title={showPassword? 'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.78 2.98-5.02 5.5-6.41"/>
+                        <path d="M1 1l22 22"/>
+                        <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.66 11.66 0 0 1-2.17 3.19"/>
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    )}
+                  </button>
                 </div>
                 {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
               </div>
@@ -290,7 +335,7 @@ function Icon({ name, className }) {
 function Sidebar({ items, collapsed, onToggle }) {
   const { user, logout } = useAuth()
   return (
-    <aside className={`fixed left-0 top-14 h-[calc(100vh-3.5rem)] border-r border-slate-800 bg-slate-900/80 backdrop-blur z-30 transition-[width] duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
+    <aside className={`fixed left-0 top-14 h-[calc(100vh-3.5rem)] border-r border-slate-800 bg-slate-900/80 backdrop-blur z-200 transition-[width] duration-200 ${collapsed ? 'w-16' : 'w-60'}`}>
       <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-end'} px-3 py-2`}> 
         <button aria-label="Toggle sidebar" onClick={onToggle} className="ml-auto inline-flex items-center justify-center w-8 h-8 rounded border border-slate-700 text-slate-300 hover:bg-slate-800">
           {collapsed ? '›' : '‹'}
@@ -298,7 +343,7 @@ function Sidebar({ items, collapsed, onToggle }) {
       </div>
       <nav className="mt-2 px-1 space-y-1">
         {items.map(i => (
-          <NavLink key={i.to} to={i.to} className={(nav)=> `group flex items-center gap-3 px-2 py-2 rounded-md text-sm font-medium ${nav.isActive ? 'bg-blue-500/15 text-blue-200 border border-blue-500/30' : 'text-slate-300 hover:bg-slate-800/60'}`}>
+          <NavLink key={i.to} to={i.to} className={(nav)=> `group flex items-center ${collapsed ? 'justify-center gap-0 px-0' : 'gap-3 px-2'} py-2 rounded-md text-sm font-medium ${nav.isActive ? 'bg-blue-500/15 text-blue-200 border border-blue-500/30' : 'text-slate-300 hover:bg-slate-800/60'}`}>
             {({ isActive }) => (
               <>
                 <Icon name={i.icon} className={`${isActive ? 'text-blue-300' : 'text-slate-300'} shrink-0`} />
@@ -332,12 +377,11 @@ function FarmerLayout() {
   const [collapsed, setCollapsed] = useState(false)
   const items = [
     { to: '/dashboard/farmer/home', label: 'Home / Field Overview', icon: 'home' },
-    { to: '/dashboard/farmer/fields', label: 'My Fields & Crops', icon: 'fields' },
-    { to: '/dashboard/farmer/financing', label: 'Financing Center', icon: 'finance' },
+    { to: '/dashboard/farmer/fields', label: 'My Fields & Financing', icon: 'fields' },
+    { to: '/dashboard/farmer/applications', label: 'My Applications', icon: 'application' },
     { to: '/dashboard/farmer/advisory', label: 'Advisory Feed', icon: 'advisory' },
     { to: '/dashboard/farmer/resources', label: 'Resources & Learning', icon: 'resources' },
   ]
-  const sideW = collapsed ? 'pl-16' : 'pl-60'
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
       {/* Header */}
@@ -350,7 +394,7 @@ function FarmerLayout() {
       {/* Sidebar */}
       <Sidebar items={items} title="Grow Portal" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
       {/* Main content */}
-      <main className={`pt-14 ${sideW} transition-[padding] duration-200`}>
+      <main className={`pt-14 ${collapsed ? 'ml-16' : ''}`}>
         <div className="p-4">
           <Outlet />
         </div>
@@ -368,7 +412,6 @@ function LenderLayout() {
     { to: '/dashboard/lender/portfolio', label: 'Portfolio Management', icon: 'portfolio' },
     { to: '/dashboard/lender/admin', label: 'Admin & Reporting', icon: 'admin' },
   ]
-  const sideW = collapsed ? 'pl-16' : 'pl-60'
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
       <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
@@ -378,7 +421,7 @@ function LenderLayout() {
         </div>
       </header>
       <Sidebar items={items} title="Risk Console" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
-      <main className={`pt-14 ${sideW} transition-[padding] duration-200`}>
+      <main className={`pt-14 ${collapsed ? 'ml-16' : ''}`}>
         <div className="p-4">
           <Outlet />
         </div>
@@ -400,7 +443,7 @@ function App() {
             <Route index element={<Navigate to="home" replace />} />
             <Route path="home" element={<FarmerHome />} />
             <Route path="fields" element={<FarmerFieldsPage />} />
-            <Route path="financing" element={<FarmerFinancing />} />
+            <Route path="applications" element={<FarmerApplications />} />
             <Route path="advisory" element={<FarmerAdvisory />} />
             <Route path="resources" element={<FarmerResources />} />
           </Route>
