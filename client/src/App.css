@@ -18,7 +18,7 @@ h3 { margin: 0; font-size: 16px; letter-spacing: 0.2px; }
 .nav { display:flex; flex-direction:column; gap:6px; margin-top: 8px; }
 .nav a { color: var(--muted); padding: 10px 12px; border-radius: 8px; text-decoration:none; display:block; }
 .nav a.active, .nav a:hover { color: var(--text); background: rgba(59,130,246,0.16); }
-.content { margin-left: calc(var(--sidebar) + 16px); padding: var(--space-5); }
+.content { margin-left: calc(var(--sidebar) + 16px); padding: var(--space-5); padding-top: 80px; }
 
 .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); margin-top: var(--space-4); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
 .card.sub { background: rgba(13,20,34,0.6); }
@@ -70,10 +70,13 @@ thead th { font-weight: 600; color: var(--muted); text-transform: none; font-siz
 tbody tr:hover { background: rgba(59,130,246,0.05); }
 
 /* Map container - force below sidebar */
-.map-container { position: relative !important; z-index: 1 !important; }
-.map-container .leaflet-container { z-index: 1 !important; }
+.map-container { position: relative !important; z-index: 1 !important; height: 400px; }
+.map-container .leaflet-container { z-index: 1 !important; height: 100%; }
 .map-container .leaflet-control-container { z-index: 2 !important; }
 .map-container .leaflet-pane { z-index: 1 !important; }
+
+/* Map viewport - ensure proper height for leaflet */
+.map-viewport { height: 100%; width: 100%; }
 
 /* Modal */
 dialog { border: none; border-radius: var(--radius); padding: 0; background: rgba(16,24,40,0.92); color: var(--text); }
