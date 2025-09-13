@@ -102,7 +102,7 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 .hero-caption { margin-top: 14px; display: inline-block; font-size: 12px; color: #99a9cd; border: 1px solid #223154; background: rgba(12,21,41,0.6); padding: 6px 10px; border-radius: 999px; }
 .auth-card { display: flex; align-items: center; justify-content: center; padding: var(--space-3); }
 .auth-panel { width: 100%; max-width: 360px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-3); box-shadow: 0 6px 20px rgba(0,0,0,0.2); }
-.auth-footer { margin-top: var(--space-3); font-size: 13px; color: var(--muted); }
+.auth-footer { margin-top: var(--space-3); font-size: 13px; color: var(--muted); text-align: center;}
 .auth-footer a { color: #a7c5ff; text-decoration: none; }
 .auth-footer a:hover { text-decoration: underline; }
 
