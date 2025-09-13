@@ -306,18 +306,11 @@ export default function FarmerFields() {
     }
   }
 
-  if (loading) {
-    return (
-      <div>
-        <h1>My Fields & Crops</h1>
-        <div className="muted">Loading your fields and applications...</div>
-      </div>
-    )
-  }
-
   return (
     <div>
       {error && <div className="error" style={{marginBottom:8}}>{error}</div>}
+
+      {/* Fields List Section */}
       <div className="row" style={{alignItems: 'stretch', gap: '24px'}}>
         <div className="col" style={{minWidth: 320}}>
           <div className="card">
@@ -390,8 +383,8 @@ export default function FarmerFields() {
                   <Marker position={center}>
                     <Popup>
                       <div style={{textAlign: 'center', padding: '4px'}}>
-                        <button 
-                          className="btn btn-primary" 
+                        <button
+                          className="btn btn-primary"
                           onClick={() => openFieldDetails(f)}
                           style={{
                             fontSize: '11px',
@@ -522,7 +515,7 @@ export default function FarmerFields() {
                   </div>
                 </div>
               )}
-              
+
               {/* Application History */}
               {fieldApplications[selectedField._id] && fieldApplications[selectedField._id].length > 0 && (
                 <div className="application-history" style={{marginBottom: 16}}>
@@ -553,7 +546,7 @@ export default function FarmerFields() {
                   </div>
                 </div>
               )}
-              
+
               <div className="action-buttons" style={{display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'space-between'}}>
                 <div style={{display: 'flex', gap: 8, flexWrap: 'wrap'}}>
                   <button className="btn btn-secondary" onClick={()=>openRegisterSensor(selectedField._id)}>Register Sensor</button>
@@ -563,8 +556,8 @@ export default function FarmerFields() {
                   const latestApp = fieldApplications[selectedField._id]?.[0]
                   const canApply = !latestApp || (latestApp.status !== 'pending' && latestApp.status !== 'approved')
                   return (
-                    <button 
-                      className={`btn ${canApply ? 'btn-primary' : 'btn-secondary'}`} 
+                    <button
+                      className={`btn ${canApply ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={canApply ? openApplyFromDetails : null}
                       disabled={!canApply}
                       title={!canApply ? `Cannot apply - you have a ${latestApp?.status} application` : 'Apply for funding'}
