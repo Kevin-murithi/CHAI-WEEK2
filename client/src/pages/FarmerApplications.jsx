@@ -27,6 +27,8 @@ export default function FarmerApplications() {
   const [error, setError] = useState('')
   const [selectedApp, setSelectedApp] = useState(null)
   const [filter, setFilter] = useState('all') // all, pending, approved, denied, draft
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
 
   async function loadApplications() {
     try {
@@ -55,7 +57,12 @@ export default function FarmerApplications() {
       })
       if (!response.ok) throw new Error('Failed to delete application')
       await loadApplications()
-      alert('Application deleted successfully')
+      
+      // Show success modal
+      setSuccessMessage('Application deleted successfully!')
+      setShowSuccessModal(true)
+      document.getElementById('success-modal-backdrop').style.display = 'block'
+      document.getElementById('success-modal')?.showModal()
     } catch (e) {
       alert('Failed to delete application: ' + e.message)
     }
@@ -80,7 +87,16 @@ export default function FarmerApplications() {
       })
       if (!response.ok) throw new Error('Failed to duplicate application')
       await loadApplications()
-      alert('Application duplicated as draft')
+      
+      // Close any open modals first
+      document.getElementById('app-details-modal')?.close()
+      document.getElementById('modal-backdrop').style.display = 'none'
+      
+      // Show success modal
+      setSuccessMessage('Application duplicated as draft successfully!')
+      setShowSuccessModal(true)
+      document.getElementById('success-modal-backdrop').style.display = 'block'
+      document.getElementById('success-modal')?.showModal()
     } catch (e) {
       alert('Failed to duplicate application: ' + e.message)
     }
@@ -405,6 +421,84 @@ export default function FarmerApplications() {
               </div>
             </div>
           )}
+        </div>
+      </dialog>
+
+      {/* Success Modal Backdrop */}
+      <div id="success-modal-backdrop" style={{
+        display: 'none',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(11, 15, 26, 0.85)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        zIndex: 1000
+      }} />
+
+      {/* Success Modal */}
+      <dialog id="success-modal" style={{
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        margin: 0,
+        padding: 0,
+        border: 'none',
+        borderRadius: '12px',
+        backgroundColor: 'transparent',
+        zIndex: 1001
+      }}>
+        <div style={{
+          backgroundColor: 'rgba(16, 24, 40, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(31, 42, 68, 0.8)',
+          borderRadius: '12px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+          color: '#e7ecf6',
+          padding: '32px',
+          minWidth: '400px',
+          maxWidth: '500px',
+          textAlign: 'center'
+        }}>
+          {/* Success Icon */}
+          <div style={{
+            width: '64px',
+            height: '64px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(34, 197, 94, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 24px auto',
+            fontSize: '32px'
+          }}>
+            ✓
+          </div>
+          
+          <h3 style={{ margin: '0 0 16px 0', color: '#22c55e' }}>Success!</h3>
+          <p style={{ margin: '0 0 24px 0', color: '#94a3b8' }}>
+            {successMessage}
+          </p>
+          
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+            <button 
+              className="btn btn-primary"
+              onClick={() => {
+                document.getElementById('success-modal')?.close()
+                document.getElementById('success-modal-backdrop').style.display = 'none'
+                setShowSuccessModal(false)
+                // Refresh the applications list
+                loadApplications()
+              }}
+              style={{ minWidth: '120px' }}
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </dialog>
     </div>

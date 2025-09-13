@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -12,7 +13,7 @@ L.Icon.Default.mergeOptions({
 })
 
 function StatusChip({ status }) {
-  const map = { pending: '🟡 Pending', approved: '🟢 Approved', denied: '🔴 Denied', needs_info: '🟠 Needs Info' }
+  const map = { pending: ' Pending', approved: ' Approved', denied: ' Denied', needs_info: ' Needs Info' }
   return <span className="badge">{map[status] || status}</span>
 }
 
@@ -46,7 +47,7 @@ function AIFieldInsights({ fieldId }) {
   if (!expanded) {
     return (
       <button className="btn btn-secondary btn-sm" onClick={() => setExpanded(true)} style={{marginTop: 8}}>
-        🤖 View AI Insights
+        View AI Insights
       </button>
     )
   }
@@ -54,7 +55,7 @@ function AIFieldInsights({ fieldId }) {
   return (
     <div className="card sub" style={{marginTop: 8, borderLeft: '3px solid #3b82f6'}}>
       <div className="row" style={{justifyContent: 'space-between', alignItems: 'center'}}>
-        <div><strong>🤖 AI Field Insights</strong></div>
+        <div><strong> AI Field Insights</strong></div>
         <button className="btn btn-secondary btn-sm" onClick={() => setExpanded(false)}>Hide</button>
       </div>
 
@@ -79,7 +80,7 @@ function AIFieldInsights({ fieldId }) {
             )}
             {insights.riskWarnings?.length > 0 && (
               <div className="pill" style={{backgroundColor: '#fef3c7', color: '#92400e'}}>
-                ⚠️ {insights.riskWarnings.length} risk{insights.riskWarnings.length > 1 ? 's' : ''}
+                {insights.riskWarnings.length} risk{insights.riskWarnings.length > 1 ? 's' : ''}
               </div>
             )}
           </div>
@@ -87,7 +88,7 @@ function AIFieldInsights({ fieldId }) {
           {/* Key Recommendations */}
           {insights.fertilizerRecommendations?.recommendations?.length > 0 && (
             <div style={{marginTop: 8}}>
-              <div className="small" style={{color: '#374151', fontWeight: 500}}>💡 Top Recommendation:</div>
+              <div className="small" style={{color: '#374151', fontWeight: 500}}> Top Recommendation:</div>
               <div className="small" style={{color: '#6b7280'}}>
                 {insights.fertilizerRecommendations.recommendations[0].product} - {insights.fertilizerRecommendations.recommendations[0].reason}
               </div>
@@ -97,7 +98,7 @@ function AIFieldInsights({ fieldId }) {
           {/* Next Planting Window */}
           {insights.plantingWindowAdvice?.nextBestWindow && (
             <div style={{marginTop: 8}}>
-              <div className="small" style={{color: '#374151', fontWeight: 500}}>🌱 Next Planting:</div>
+              <div className="small" style={{color: '#374151', fontWeight: 500}}> Next Planting:</div>
               <div className="small" style={{color: '#6b7280'}}>
                 {insights.plantingWindowAdvice.nextBestWindow.start} ({insights.plantingWindowAdvice.nextBestWindow.daysUntil} days)
               </div>
@@ -125,18 +126,21 @@ function scoreToColor(score) {
 }
 
 export default function FarmerFields() {
+  const navigate = useNavigate()
   const [fields, setFields] = useState([])
-  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [form, setForm] = useState({ fieldId: '', crop: 'maize', plantingDate: '2025-03-15', requestedAmount: 500, source: 'nasa' })
+  const [form, setForm] = useState({})
   const [submitting, setSubmitting] = useState(false)
-  const [sensorForm, setSensorForm] = useState({ fieldId: '', name: '', type: 'soil' })
-  const [latestSensors, setLatestSensors] = useState({}) // fieldId -> readings array
+  const [savingDraft, setSavingDraft] = useState(false)
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [successData, setSuccessData] = useState(null)
+  const [fieldApplications, setFieldApplications] = useState({})
+  const [apps, setApps] = useState([])
   const [selectedField, setSelectedField] = useState(null)
   const [fieldAnalytics, setFieldAnalytics] = useState({})
-  const [savingDraft, setSavingDraft] = useState(false)
-  const [fieldApplications, setFieldApplications] = useState({})
+  const [sensorForm, setSensorForm] = useState({})
+  const [latestSensors, setLatestSensors] = useState({})
 
   async function load() {
     try {
@@ -149,7 +153,8 @@ export default function FarmerFields() {
       if (!aRes.ok) throw new Error('Failed to load applications')
       const f = await fRes.json(); const a = await aRes.json()
       setFields(f.fields || [])
-      setApps(a.applications || [])
+      const applications = a.applications || []
+      setApps(applications)
       if ((f.fields||[]).length && !form.fieldId) setForm(prev => ({ ...prev, fieldId: f.fields[0]._id }))
     } catch (e) {
       setError(e.message)
@@ -274,14 +279,26 @@ export default function FarmerFields() {
       if (!resp.ok) throw new Error('Failed to create application')
       await load()
       const data = await resp.json()
-      alert(`Preliminary ClimaScore: ${data.application?.climascoreSnapshot?.climascore}`)
+      
+      // Close the application modal first
       const modal = document.getElementById('apply-modal')
       if (modal) modal.close()
+      
+      // Show success modal with data
+      setSuccessData(data)
+      setShowSuccessModal(true)
     } catch (e) {
       setError(e.message)
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function closeSuccessModal() {
+    setShowSuccessModal(false)
+    setSuccessData(null)
+    // Navigate to applications page
+    navigate('/farmer/applications')
   }
 
   async function saveDraft(e) {
@@ -732,6 +749,115 @@ export default function FarmerFields() {
           </div>
         </form>
       </dialog>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <>
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              zIndex: 9998
+            }}
+            onClick={closeSuccessModal}
+          />
+          <dialog 
+            open
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              margin: 0,
+              padding: 0,
+              border: 'none',
+              borderRadius: '12px',
+              backgroundColor: 'transparent',
+              maxHeight: '90vh',
+              maxWidth: '500px',
+              width: '90%',
+              zIndex: 9999
+            }}
+          >
+            <div className="modal-card" style={{
+              backgroundColor: 'rgba(16, 24, 40, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              border: '1px solid rgba(31, 42, 68, 0.8)',
+              borderRadius: '12px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.4)',
+              color: '#e7ecf6',
+              padding: '24px',
+              textAlign: 'center'
+            }}>
+              <div style={{marginBottom: '20px'}}>
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  backgroundColor: '#22c55e',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                  fontSize: '24px'
+                }}>
+                  ✓
+                </div>
+                <h2 style={{margin: '0 0 8px', color: 'white'}}>Application Submitted Successfully!</h2>
+                <p style={{margin: 0, color: '#94a3b8'}}>Your funding application has been processed and submitted for review.</p>
+              </div>
+              
+              {successData?.application?.climascoreSnapshot?.climascore && (
+                <div style={{
+                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '8px',
+                  padding: '16px',
+                  marginBottom: '20px'
+                }}>
+                  <h4 style={{margin: '0 0 8px', color: '#60a5fa'}}>Your ClimaScore</h4>
+                  <div style={{
+                    fontSize: '32px',
+                    fontWeight: 'bold',
+                    color: scoreToColor(successData.application.climascoreSnapshot.climascore)
+                  }}>
+                    {successData.application.climascoreSnapshot.climascore}
+                  </div>
+                  <p style={{margin: '8px 0 0', fontSize: '14px', color: '#94a3b8'}}>
+                    This score reflects your field's climate resilience and will be used in the loan evaluation process.
+                  </p>
+                </div>
+              )}
+              
+              <div style={{marginBottom: '20px'}}>
+                <p style={{margin: '0 0 8px', color: '#94a3b8', fontSize: '14px'}}>What happens next?</p>
+                <ul style={{textAlign: 'left', color: '#cbd5e1', fontSize: '14px', paddingLeft: '20px'}}>
+                  <li>Your application will be reviewed by our lending team</li>
+                  <li>You'll receive updates via email and in your dashboard</li>
+                  <li>The review process typically takes 3-5 business days</li>
+                </ul>
+              </div>
+              
+              <div style={{display: 'flex', gap: '12px', justifyContent: 'center'}}>
+                <button 
+                  className="btn btn-primary"
+                  onClick={closeSuccessModal}
+                  style={{minWidth: '140px'}}
+                >
+                  View My Applications
+                </button>
+              </div>
+            </div>
+          </dialog>
+        </>
+      )}
     </div>
   )
 }
