@@ -3,16 +3,164 @@ const Field = require('../models/Field');
 const Application = require('../models/Application');
 const SensorDevice = require('../models/SensorDevice');
 const SensorReading = require('../models/SensorReading');
+const OpenAI = require('openai');
+
+// Test OpenRouter API connectivity
+module.exports.testOpenAI = async (req, res) => {
+  try {
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      baseURL: "https://openrouter.ai/api/v1"
+    });
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        {
+          role: "system",
+          content: "You are a helpful assistant."
+        },
+        {
+          role: "user",
+          content: "Hello! Can you confirm that the OpenRouter API is working? Please respond with a simple confirmation."
+        }
+      ],
+      max_tokens: 50,
+      temperature: 0.5
+    });
+
+    const response = completion.choices[0].message.content;
+
+    res.json({
+      success: true,
+      message: "OpenAI API is working correctly",
+      response: response,
+      model: completion.model,
+      usage: completion.usage
+    });
+  } catch (error) {
+    console.error('OpenAI API test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'OpenAI API test failed',
+      details: error.message
+    });
+  }
+};
+
+// Test AI advisory recommendations (no auth required)
+module.exports.testAdvisory = async (req, res) => {
+  try {
+    // Create mock farmer data for testing
+    const mockFarmerData = {
+      fields: [
+        {
+          _id: 'test-field-1',
+          name: 'North Field',
+          areaHa: 5.2,
+          crop: 'maize',
+          location: 'Farm Location'
+        }
+      ],
+      sensors: [
+        {
+          type: 'soil',
+          soilMoisture: 45,
+          temperature: 22,
+          capturedAt: new Date().toISOString()
+        }
+      ],
+      applications: [
+        {
+          status: 'approved',
+          amount: 2500,
+          purpose: 'Equipment purchase'
+        }
+      ]
+    };
+
+    const advisory = await aiService.generateAdvisoryRecommendations(mockFarmerData);
+
+    res.json({
+      success: true,
+      message: "AI advisory recommendations generated successfully",
+      advisory,
+      testData: mockFarmerData
+    });
+  } catch (error) {
+    console.error('AI advisory test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'AI advisory test failed',
+      details: error.message
+    });
+  }
+};
+
+// Test AI predictive analytics (no auth required)
+module.exports.testAnalytics = async (req, res) => {
+  try {
+    const { fieldId } = req.params;
+    const { crop } = req.query;
+
+    // Create mock field data for testing
+    const mockFieldData = {
+      field: {
+        _id: fieldId,
+        name: 'Test Field',
+        areaHa: 5.2,
+        crop: crop || 'maize'
+      },
+      sensors: [
+        {
+          type: 'soil',
+          soilMoisture: 45,
+          temperature: 22,
+          capturedAt: new Date().toISOString()
+        },
+        {
+          type: 'weather',
+          humidity: 65,
+          windSpeed: 12,
+          capturedAt: new Date().toISOString()
+        }
+      ],
+      weather: {
+        temperature: 25,
+        humidity: 70,
+        rainfall: 2.5
+      },
+      crop: crop || 'maize',
+      plantingDate: '2025-03-15'
+    };
+
+    const analytics = await aiService.generatePredictiveAnalytics(mockFieldData);
+
+    res.json({
+      success: true,
+      message: "AI predictive analytics generated successfully",
+      analytics,
+      testData: mockFieldData
+    });
+  } catch (error) {
+    console.error('AI analytics test failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'AI analytics test failed',
+      details: error.message
+    });
+  }
+};
 
 // Get AI-powered advisory recommendations for farmer
 module.exports.getAdvisoryRecommendations = async (req, res) => {
   try {
     const farmerId = req.user.id;
-    
+
     // Gather farmer's data
     const fields = await Field.find({ owner: farmerId }).lean();
     const applications = await Application.find({ farmer: farmerId }).lean();
-    
+
     // Get sensor data for all fields
     const sensors = [];
     for (const field of fields) {
@@ -34,7 +182,7 @@ module.exports.getAdvisoryRecommendations = async (req, res) => {
     };
 
     const advisory = await aiService.generateAdvisoryRecommendations(farmerData);
-    
+
     res.json({
       success: true,
       advisory,
@@ -49,6 +197,8 @@ module.exports.getAdvisoryRecommendations = async (req, res) => {
     res.status(500).json({ error: 'Failed to generate advisory recommendations' });
   }
 };
+
+
 
 // Enhanced ClimaScore with AI
 module.exports.getEnhancedClimaScore = async (req, res) => {

@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose');
+require('dotenv').config();
 const authRoutes = require('./routes/authRoutes')
 const climaRoutes = require('./routes/climaRoutes')
 const farmerRoutes = require('./routes/farmerRoutes')
@@ -28,13 +29,14 @@ connectDB();
   })
 
 app.use(authRoutes);
+// AI routes (some endpoints don't require auth)
+app.use('/api/ai', aiRoutes);
 // Require a valid session for ClimaScore and any future protected routes
 app.use(requireRole());
 app.use(climaRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/lender', lenderRoutes);
 app.use('/api/sensors', sensorRoutes);
-app.use('/api/ai', aiRoutes);
 app.get('/check-auth', checkAuth, (req, res) => {
     res.status(200).json({ isAuthenticated: true });
 });
