@@ -1,7 +1,23 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import '../App.css'
 
 const API_BASE = 'http://localhost:3000'
+
+// Charts
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  RadialLinearScale,
+  PointElement,
+  LineElement,
+  CategoryScale,
+  LinearScale
+} from 'chart.js'
+import { Doughnut, Radar, Line } from 'react-chartjs-2'
+
+ChartJS.register(ArcElement, Tooltip, Legend, RadialLinearScale, PointElement, LineElement, CategoryScale, LinearScale)
 
 function SourceBadge({ source }) {
   const label = source === 'nasa-power' || source === 'nasa' ? 'NASA POWER' : source === 'open-meteo' ? 'Open-Meteo' : (source||'').toUpperCase()
@@ -19,10 +35,80 @@ function RiskPill({ label, level }) {
 
 function Gauge({ value }) {
   const clamped = Math.max(0, Math.min(100, Number(value)||0))
+  const data = useMemo(() => ({
+    labels: ['Score','Remaining'],
+    datasets: [{
+      data: [clamped, 100 - clamped],
+      backgroundColor: ['#22c55e', '#1f2a44'],
+      borderWidth: 0,
+      cutout: '70%'
+    }]
+  }), [clamped])
+  const options = useMemo(() => ({
+    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    rotation: -90,
+    circumference: 180,
+    responsive: true,
+    maintainAspectRatio: false
+  }), [])
   return (
-    <div className="gauge">
-      <div className="gauge-fill" style={{ width: `${clamped}%` }} />
-      <div className="gauge-text">{clamped}</div>
+    <div style={{ position:'relative', height: 160 }}>
+      <Doughnut data={data} options={options} />
+      <div className="gauge-text" style={{top: 60, position:'absolute', left:0, right:0, textAlign:'center', fontSize:24, fontWeight:700}}>{clamped}</div>
+    </div>
+  )
+}
+
+function RiskRadar({ breakdown }) {
+  if (!breakdown) return null
+  const map = { low: 20, medium: 60, high: 90 }
+  const drought = map[breakdown.drought_risk] ?? 50
+  const flood = map[breakdown.flood_risk] ?? 50
+  const heat = map[breakdown.heat_stress_risk] ?? 50
+  const data = {
+    labels: ['Drought','Flood','Heat'],
+    datasets: [{
+      label: 'Risk Level',
+      data: [drought, flood, heat],
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: '#3b82f6',
+      pointBackgroundColor: '#93c5fd'
+    }]
+  }
+  const options = { plugins: { legend: { display: false } }, scales: { r: { beginAtZero: true, max: 100, grid: { color: '#223154' }, angleLines: { color: '#223154' } } } }
+  return <div style={{height: 260}}><Radar data={data} options={options} /></div>
+}
+
+function Timeline({ debug }) {
+  // Expect optional debug.timeseries = { dates: [], precip: [], tmax: [] }
+  const ts = debug?.timeseries
+  if (!ts || !Array.isArray(ts.dates) || !ts.dates.length) return null
+  const data = {
+    labels: ts.dates,
+    datasets: [
+      { label: 'Precip (mm)', data: ts.precip || [], borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,0.2)', yAxisID: 'y' },
+      { label: 'Tmax (°C)', data: ts.tmax || [], borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.2)', yAxisID: 'y1' }
+    ]
+  }
+  const options = { responsive: true, interaction: { mode: 'index', intersect: false }, stacked: false, plugins: { legend: { labels: { color: '#cfe1ff' } } }, scales: { x: { ticks: { color: '#93a4c7' }, grid: { color: '#223154' } }, y: { position: 'left', ticks: { color: '#93a4c7' }, grid: { color: '#223154' } }, y1: { position: 'right', ticks: { color: '#93a4c7' }, grid: { drawOnChartArea: false } } } }
+  return <div style={{height: 240}}><Line data={data} options={options} /></div>
+}
+
+function Sensors({ sensors }) {
+  if (!sensors || typeof sensors !== 'object') return null
+  const entries = Object.entries(sensors)
+  if (!entries.length) return null
+  return (
+    <div className="card sub">
+      <div className="card-header"><h4>IoT Sensor Readings</h4></div>
+      <div className="row">
+        {entries.map(([k,v]) => (
+          <div key={k} className="col" style={{minWidth:160}}>
+            <div className="muted small">{k}</div>
+            <div style={{fontWeight:600}}>{String(v)}</div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -37,12 +123,21 @@ function SingleResult({ data }) {
         {(data_sources_used||[]).map(s => <SourceBadge key={s} source={s} />)}
       </div>
       <Gauge value={climascore} />
-      <div className="row">
+      <div className="row" style={{marginTop: 8}}>
         <RiskPill label="Drought" level={risk_breakdown?.drought_risk} />
         <RiskPill label="Flood" level={risk_breakdown?.flood_risk} />
         <RiskPill label="Heat" level={risk_breakdown?.heat_stress_risk} />
       </div>
-      <div className="row terms">
+      <div className="card sub" style={{marginTop: 8}}>
+        <div className="card-header"><h4>Risk Breakdown</h4></div>
+        <RiskRadar breakdown={risk_breakdown} />
+      </div>
+      <div className="card sub" style={{marginTop: 8}}>
+        <div className="card-header"><h4>Historical & Forecast Timeline</h4></div>
+        <Timeline debug={debug} />
+        {!debug?.timeseries && <div className="muted small">Timeline data unavailable for this source.</div>}
+      </div>
+      <div className="row terms" style={{marginTop: 8}}>
         <div>
           <div className="muted">Amount</div>
           <div>${recommended_loan_terms?.amount}</div>
@@ -56,6 +151,7 @@ function SingleResult({ data }) {
           <div>{recommended_loan_terms?.confidence}</div>
         </div>
       </div>
+      <Sensors sensors={debug?.sensors} />
       <details className="debug">
         <summary>Debug</summary>
         <pre>{JSON.stringify(debug, null, 2)}</pre>

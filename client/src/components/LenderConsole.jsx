@@ -32,6 +32,7 @@ export default function LenderConsole() {
   const [filter, setFilter] = useState({ status: '', crop: '', band: '' })
   const [selected, setSelected] = useState(null)
   const [action, setAction] = useState({ action: 'approve', amount: '', interestRate: '', comments: '' })
+  const [sensors, setSensors] = useState([])
   
   const filtered = useMemo(() => {
     return apps.filter(a => {
@@ -53,6 +54,11 @@ export default function LenderConsole() {
       const data = await resp.json()
       setSelected(data.application)
       setAction({ action: 'approve', amount: data.application?.climascoreSnapshot?.recommended_loan_terms?.amount || '', interestRate: data.application?.climascoreSnapshot?.recommended_loan_terms?.interest_rate || '', comments: '' })
+      // fetch sensors
+      const sres = await fetch(`http://localhost:3000/api/lender/applications/${app._id}/sensors`, { credentials: 'include' })
+      if (sres.ok) {
+        const sdata = await sres.json(); setSensors(sdata.readings || [])
+      } else { setSensors([]) }
       const el = document.getElementById('review-modal')
       if (el) el.showModal()
     } catch (e) {
@@ -170,6 +176,21 @@ export default function LenderConsole() {
                   <div className="pill low">Flood: {selected.climascoreSnapshot?.risk_breakdown?.flood_risk}</div>
                   <div className="pill low">Heat: {selected.climascoreSnapshot?.risk_breakdown?.heat_stress_risk}</div>
                 </div>
+              </div>
+              <div className="card sub" style={{marginTop:8}}>
+                <div className="card-header"><h4>IoT Sensors (latest)</h4></div>
+                {(!sensors || !sensors.length) && <div className="muted small">No sensor readings available.</div>}
+                {sensors && sensors.map((r, idx) => (
+                  <div key={idx} className="row" style={{justifyContent:'space-between'}}>
+                    <div className="muted small">{r.device?.name} • {r.device?.type}</div>
+                    <div className="muted small">{new Date(r.capturedAt).toLocaleString()}</div>
+                    <div className="row">
+                      {Object.entries(r.metrics||{}).map(([k,v]) => (
+                        <div key={k} className="pill low"><span className="pill-label">{k}</span><span className="pill-level">{String(v)}</span></div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
               <div className="row" style={{marginTop:8}}>
                 <div className="col"><label>Decision</label>

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
-import 'leaflet-draw'
+import 'leaflet-draw/dist/leaflet.draw.js'
 import 'leaflet-draw/dist/leaflet.draw.css'
 
 function scoreToColor(score) {
