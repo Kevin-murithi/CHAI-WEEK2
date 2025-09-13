@@ -8,13 +8,13 @@ h1 { margin: 0 0 var(--space-3); font-size: 26px; letter-spacing: 0.2px; }
 h2 { margin: 0 0 var(--space-2); font-size: 20px; letter-spacing: 0.2px; }
 h3 { margin: 0; font-size: 16px; letter-spacing: 0.2px; }
 
-.header { position: sticky; top: 0; z-index: 40; backdrop-filter: blur(10px); background: rgba(11,15,26,0.85); border-bottom: 1px solid var(--border); }
+.header { position: fixed; top: 0; left: 0; right: 0; z-index: 40; backdrop-filter: blur(10px); background: rgba(11,15,26,0.95); border-bottom: 1px solid var(--border); }
 .header-inner { display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 12px 24px; }
 .brand { display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:0.3px; }
 .brand-badge { width:28px; height:28px; border-radius:6px; background: linear-gradient(135deg, var(--accent), var(--accent-2)); display:flex; align-items:center; justify-content:center; font-size:14px; }
 
 .layout { display:block; }
-.sidebar { position: fixed; top: 0; left: 0; width: var(--sidebar); height: 100vh; padding: 14px 10px; border-right: 1px solid var(--border); background: rgba(15,22,38,0.92); backdrop-filter: blur(8px); z-index: 30; }
+.sidebar { position: fixed; top: 64px; left: 0; width: var(--sidebar); height: calc(100vh - 64px); padding: 14px 10px; border-right: 1px solid var(--border); background: rgba(15,22,38,0.92); backdrop-filter: blur(8px); z-index: 30; }
 .nav { display:flex; flex-direction:column; gap:6px; margin-top: 8px; }
 .nav a { color: var(--muted); padding: 10px 12px; border-radius: 8px; text-decoration:none; display:block; }
 .nav a.active, .nav a:hover { color: var(--text); background: rgba(59,130,246,0.16); }
