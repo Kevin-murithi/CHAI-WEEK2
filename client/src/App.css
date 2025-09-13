@@ -110,3 +110,12 @@ dialog { border: none; border-radius: var(--radius); padding: 0; background: rgb
 
 /* Auth page buttons keep the gradient */
 .auth-panel .btn-primary { background: linear-gradient(to left, rgba(34,197,94,0.25), rgba(0,0,0,0.8)); border: none; color: #ffffff; backdrop-filter: blur(8px); }
+
+/* Sidebar footer and logout button */
+.sidebar { display: flex; flex-direction: column; }
+.sidebar-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border); }
+.sidebar-user { margin-bottom: 12px; }
+.user-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.user-role { font-size: 12px; color: var(--muted); text-transform: capitalize; }
+.btn-logout { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; width: 100%; }
+.btn-logout:hover { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); }

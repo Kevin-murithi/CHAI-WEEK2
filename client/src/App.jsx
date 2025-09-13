@@ -26,7 +26,7 @@ function ProtectedRoute({ children, roles }) {
 }
 
 function NavBar() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   return (
     <div className="card" style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
       <div>
@@ -37,12 +37,7 @@ function NavBar() {
         </>}
       </div>
       <div>
-        {user ? (
-          <>
-            <span className="badge" style={{marginRight:8}}>{user.firstName} {user.lastName} ({user.role})</span>
-            <button onClick={logout}>Logout</button>
-          </>
-        ) : (
+        {!user && (
           <>
             <Link to="/login" className="link">Login</Link>
             <span style={{margin:'0 8px'}}>|</span>
@@ -158,6 +153,7 @@ function Register() {
 }
 
 function Sidebar({ items, title }) {
+  const { user, logout } = useAuth()
   return (
     <aside className="sidebar">
       {title && <div className="brand" style={{marginBottom:8}}><div className="brand-badge">CS</div> <span>{title}</span></div>}
@@ -168,6 +164,19 @@ function Sidebar({ items, title }) {
           </NavLink>
         ))}
       </nav>
+      <div className="sidebar-footer">
+        {user && (
+          <>
+            <div className="sidebar-user">
+              <div className="user-name">{user.firstName} {user.lastName}</div>
+              <div className="user-role">{user.role}</div>
+            </div>
+            <button className="btn btn-logout" onClick={logout}>
+              Logout
+            </button>
+          </>
+        )}
+      </div>
     </aside>
   )
 }
