@@ -1,6 +1,8 @@
 const Application = require('../models/Application');
 const Field = require('../models/Field');
 const User = require('../models/User');
+const SensorDevice = require('../models/SensorDevice');
+const SensorReading = require('../models/SensorReading');
 
 // GET /api/lender/applications?status=&crop=&minScore=&maxScore=&q=
 module.exports.listApplications = async (req, res) => {
@@ -88,5 +90,26 @@ module.exports.decideApplication = async (req, res) => {
   } catch (e) {
     console.error('lender decideApplication error', e);
     res.status(500).json({ error: 'Failed to update application' });
+  }
+};
+
+// GET /api/lender/applications/:id/sensors
+module.exports.getApplicationSensors = async (req, res) => {
+  try {
+    const app = await Application.findById(req.params.id).lean();
+    if (!app) return res.status(404).json({ error: 'Application not found' });
+    const fieldId = app.field;
+    const devices = await SensorDevice.find({ field: fieldId }).lean();
+    const out = [];
+    for (const d of devices) {
+      const r = await SensorReading.findOne({ device: d._id })
+        .sort({ capturedAt: -1 })
+        .lean();
+      if (r) out.push({ device: { id: d._id, name: d.name, type: d.type }, metrics: r.metrics, capturedAt: r.capturedAt });
+    }
+    res.json({ readings: out });
+  } catch (e) {
+    console.error('lender getApplicationSensors error', e);
+    res.status(500).json({ error: 'Failed to fetch sensors' });
   }
 };

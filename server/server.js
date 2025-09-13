@@ -4,6 +4,8 @@ const authRoutes = require('./routes/authRoutes')
 const climaRoutes = require('./routes/climaRoutes')
 const farmerRoutes = require('./routes/farmerRoutes')
 const lenderRoutes = require('./routes/lenderRoutes')
+const sensorRoutes = require('./routes/sensorRoutes')
+const aiRoutes = require('./routes/ai')
 const { connectDB } = require('./config/db.js');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -31,6 +33,8 @@ app.use(requireRole());
 app.use(climaRoutes);
 app.use('/api/farmer', farmerRoutes);
 app.use('/api/lender', lenderRoutes);
+app.use('/api/sensors', sensorRoutes);
+app.use('/api/ai', aiRoutes);
 app.get('/check-auth', checkAuth, (req, res) => {
     res.status(200).json({ isAuthenticated: true });
 });

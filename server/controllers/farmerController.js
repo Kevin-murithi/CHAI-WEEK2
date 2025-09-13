@@ -54,7 +54,37 @@ module.exports.createField = async (req, res) => {
     }
     const areaHa = approximateAreaHa(geometry);
     const field = await Field.create({ owner: req.user.id, name, geometry, areaHa });
-    res.status(201).json({ field });
+    
+    // Calculate initial ClimaScore for the field
+    try {
+      const ctr = polygonCentroid(geometry);
+      if (ctr) {
+        const { computeClimaScore } = require('../services/climateService');
+        const snapshot = await computeClimaScore({ 
+          lat: ctr.lat, 
+          lon: ctr.lon, 
+          crop: 'maize', // default crop
+          planting_date: null,
+          source: 'nasa'
+        });
+        
+        // Update field with initial score
+        await Field.updateOne(
+          { _id: field._id }, 
+          { $set: { latestClimaScore: snapshot.climascore, latestRiskBreakdown: snapshot.risk_breakdown } }
+        );
+        
+        // Return updated field data
+        const updatedField = await Field.findById(field._id);
+        res.status(201).json({ field: updatedField });
+      } else {
+        res.status(201).json({ field });
+      }
+    } catch (scoreError) {
+      console.error('Failed to calculate initial ClimaScore:', scoreError);
+      // Still return the field even if score calculation fails
+      res.status(201).json({ field });
+    }
   } catch (e) {
     console.error('createField error', e);
     res.status(500).json({ error: 'Failed to create field' });
@@ -88,6 +118,12 @@ module.exports.createApplication = async (req, res) => {
     }
     const field = await Field.findOne({ _id: fieldId, owner: req.user.id });
     if (!field) return res.status(404).json({ error: 'Field not found' });
+
+    // Prevent duplicate applications when last status is pending or approved
+    const lastApp = await Application.findOne({ field: fieldId, farmer: req.user.id }).sort({ createdAt: -1 }).lean();
+    if (lastApp && (lastApp.status === 'pending' || lastApp.status === 'approved')) {
+      return res.status(400).json({ error: 'An application for this field is already pending or approved. You can only reapply if it was denied.' });
+    }
 
     const ctr = polygonCentroid(field.geometry);
     if (!ctr) return res.status(400).json({ error: 'Invalid field geometry' });

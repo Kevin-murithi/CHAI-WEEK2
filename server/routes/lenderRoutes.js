@@ -10,5 +10,6 @@ router.use(requireRole(['lender']));
 router.get('/applications', lender.listApplications);
 router.get('/applications/:id', lender.getApplication);
 router.post('/applications/:id/decision', lender.decideApplication);
+router.get('/applications/:id/sensors', lender.getApplicationSensors);
 
 module.exports = router;
