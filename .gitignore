@@ -12,3 +12,6 @@ node_modules/
 dist/
 build/
 prompts.txt
+
+GITHUB_ISSUES.md
+TEAM_STRUCTURE.md
