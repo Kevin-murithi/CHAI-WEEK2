@@ -18,6 +18,7 @@ import LenderQueue from './pages/LenderQueue.jsx'
 import LenderApplication from './pages/LenderApplication.jsx'
 import LenderPortfolio from './pages/LenderPortfolio.jsx'
 import LenderAdmin from './pages/LenderAdmin.jsx'
+import ColdStorageDashboard from './pages/ColdStorageDashboard.jsx'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -25,6 +26,29 @@ function ProtectedRoute({ children, roles }) {
   if (!user) return <Navigate to="/login" replace />
   if (roles && roles.length && !roles.includes(user.role)) return <Navigate to="/" replace />
   return children
+}
+
+function ColdStorageLayout() {
+  const [collapsed, setCollapsed] = useState(false)
+  const items = [
+    { to: '/dashboard/cold-storage/overview', label: 'Overview', icon: 'overview' },
+  ]
+  return (
+    <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
+        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+          <ClimaScoreLogo />
+          <span>Cold Storage</span>
+        </div>
+      </header>
+      <Sidebar items={items} title="Cold Storage" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
+      <main className={`pt-14 ${collapsed ? 'ml-16' : ''}`}>
+        <div className="p-4">
+          <Outlet />
+        </div>
+      </main>
+    </div>
+  )
 }
 
 function NavBar() {
@@ -35,7 +59,7 @@ function NavBar() {
         <Link to="/" className="link">Home</Link>
         {user && <>
           <span style={{margin:'0 8px'}}>|</span>
-          <Link to={user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer'} className="link">Dashboard</Link>
+          <Link to={user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'} className="link">Dashboard</Link>
         </>}
       </div>
       <div>
@@ -57,7 +81,7 @@ function Home() {
 }
 
 function Login() {
-  const { login, user } = useAuth()
+  const { login, user, register } = useAuth()
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -91,14 +115,48 @@ function Login() {
       await login({ email, password })
       // navigate after login based on role
       const role = (user?.role) || 'farmer'
-      navigate(role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
+      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+      navigate(dest, { replace: true })
     } catch(e) { 
       setError(e.message) 
     } finally { setLoading(false) }
   }
+
+  // Dev helper: quick login by role; if user doesn't exist, auto-register and then login
+  async function quickLogin(role) {
+    try {
+      setError(''); setLoading(true)
+      const creds = {
+        farmer: { email: 'farmer.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Farmer', role: 'farmer' },
+        lender: { email: 'lender.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Lender', role: 'lender' },
+        cold_storage_owner: { email: 'cold.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Cold', role: 'cold_storage_owner' },
+      }[role]
+      if (!creds) return
+      setEmail(creds.email); setPassword(creds.password)
+      try {
+        await login({ email: creds.email, password: creds.password })
+      } catch (_) {
+        // Attempt to register then login
+        try {
+          await register(creds)
+        } catch (e) {
+          // Ignore if already exists; proceed to login
+        }
+        await login({ email: creds.email, password: creds.password })
+      }
+      // Navigation handled by effect below; but we can proactively navigate based on role
+      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+      navigate(dest, { replace: true })
+    } catch (e) {
+      setError('Quick login failed')
+    } finally {
+      setLoading(false)
+    }
+  }
   useEffect(() => {
     if (user?.role) {
-      navigate(user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
+      const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+      navigate(dest, { replace: true })
     }
   }, [user, navigate])
   const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!password
@@ -110,25 +168,48 @@ function Login() {
             <ClimaScoreLogo size={56} className="mb-3" />
             <div className="auth-title">Welcome back</div>
           </div>
-          <div className="auth-sub">ClimaScore is an AI-powered platform that serves farmers and lenders with actionable climate intelligence.</div>
-          <ul className="hero-points" aria-label="Platform benefits">
-            <li>
-              <span className="dot" aria-hidden="true"></span>
-              <span><strong>For Farmers</strong>: Track field risk, get localized advisories, and unlock financing when you need it.</span>
-            </li>
-            
-            <li>
-              <span className="dot" aria-hidden="true"></span>
-              <span>
-                <strong>For Lenders</strong>: Assess loan risk with transparent climate scores and portfolio insights.
-              </span>
-            </li>
-          </ul>
-
+          <div className="auth-sub">ClimaScore is an AI-powered platform for Farmers, Lenders and Cold Storage Owners.</div>
           <span className="hero-caption">Secure. Transparent. Built for agriculture.</span>
           <div className="cta">
             {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>}
             <Link to="/register" className="btn btn-secondary">Create account</Link>
+          </div>
+
+          {/* Role Cards Row (Dev Quick Login) */}
+          <div style={{display:'flex', width:'100%', gap:16, marginTop:16, alignItems:'stretch', justifyContent:'space-around', flexWrap:'nowrap'}}>
+            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
+              <div className="text-slate-200 text-lg font-semibold">Farmer</div>
+              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
+                <li>Track field risk with ClimaScore</li>
+                <li>Personalized AI advisories</li>
+                <li>Access financing and manage applications</li>
+              </ul>
+              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
+                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('farmer')} disabled={loading}>Quick login as Farmer</button>
+              </div>
+            </div>
+            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
+              <div className="text-slate-200 text-lg font-semibold">Lender</div>
+              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
+                <li>Risk console with transparent scoring</li>
+                <li>Application queue and screening</li>
+                <li>Portfolio monitoring and reporting</li>
+              </ul>
+              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
+                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('lender')} disabled={loading}>Quick login as Lender</button>
+              </div>
+            </div>
+            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
+              <div className="text-slate-200 text-lg font-semibold">Cold Storage Owner</div>
+              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
+                <li>Track facilities and locations</li>
+                <li>Monitor temperatures & humidity</li>
+                <li>View utilization, alerts and status</li>
+              </ul>
+              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
+                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('cold_storage_owner')} disabled={loading}>Quick login as Cold Storage</button>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -220,14 +301,16 @@ function Register() {
       if (!validate()) return
       await register(form) 
       const role = (user?.role) || form.role || 'farmer'
-      navigate(role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
+      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+      navigate(dest, { replace: true })
     } catch(e){ 
       setError(e.message) 
     } finally { setLoading(false) } 
   }
   useEffect(() => {
     if (user?.role) {
-      navigate(user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer', { replace: true })
+      const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+      navigate(dest, { replace: true })
     }
   }, [user, navigate])
   const isValid = !!form.firstName.trim() && !!form.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.password.length >= 6
@@ -300,7 +383,7 @@ function Register() {
                 {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
               </div>
             </div>
-            <div className="row"><div className="col"><label>Account Type</label><select value={form.role} onChange={e=>setField('role', e.target.value)}><option value="farmer">Farmer</option><option value="lender">Lender</option></select></div></div>
+            <div className="row"><div className="col"><label>Account Type</label><select value={form.role} onChange={e=>setField('role', e.target.value)}><option value="farmer">Farmer</option><option value="lender">Lender</option><option value="cold_storage_owner">Cold Storage Owner</option></select></div></div>
             {error && <div className="error">{error}</div>}
             <div className="form-actions">
               <button className={`btn btn-primary${loading ? ' loading' : ''}`} aria-busy={loading} disabled={!isValid || loading}>
@@ -462,6 +545,10 @@ function App() {
             <Route path="portfolio" element={<LenderPortfolio />} />
             <Route path="admin" element={<LenderAdmin />} />
           </Route>
+          <Route path="/dashboard/cold-storage" element={<ProtectedRoute roles={["cold_storage_owner"]}><ColdStorageLayout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="overview" replace />} />
+            <Route path="overview" element={<ColdStorageDashboard />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
@@ -480,7 +567,8 @@ function ConditionalNavBar() {
 function RoleRouter() {
   const { user } = useAuth()
   if (!user) return <Navigate to="/login" replace />
-  return <Navigate to={user.role === 'lender' ? '/dashboard/lender' : '/dashboard/farmer'} replace />
+  const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
+  return <Navigate to={dest} replace />
 }
 
 export default App

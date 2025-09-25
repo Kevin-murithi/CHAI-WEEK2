@@ -42,7 +42,7 @@ module.exports.register = async(req, res) =>{
             password,
             firstName,
             lastName,
-            role: ['farmer','lender'].includes(role) ? role : 'farmer'
+            role: ['farmer','lender','cold_storage_owner'].includes(role) ? role : 'farmer'
         });
         const token = createToken(user._id, user.role);
         res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000, secure: false, sameSite: 'lax'});

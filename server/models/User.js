@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['farmer', 'lender'],
+        enum: ['farmer', 'lender', 'cold_storage_owner'],
         default: 'farmer',
         required: true
     }
