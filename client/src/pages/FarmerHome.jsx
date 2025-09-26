@@ -1,11 +1,16 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import '../styles/ai-insights.css'
+import { useAuth } from '../context/AuthContext.jsx'
+import GreetingHeader from '../components/home/GreetingHeader.jsx'
+import FieldSnapshots from '../components/home/FieldSnapshots.jsx'
+import AiPortfolioInsights from '../components/home/AiPortfolioInsights.jsx'
+import { MapIcon, BanknotesIcon, CpuChipIcon, BookOpenIcon, ArrowRightIcon } from '@heroicons/react/24/solid'
 
 // Home page focuses on summary and navigation; mapping moved to FarmerFieldsPage
 
 export default function FarmerHome() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [fields, setFields] = useState([])
   const [apps, setApps] = useState([])
   const [aiSummary, setAiSummary] = useState(null)
@@ -29,7 +34,7 @@ export default function FarmerHome() {
       } catch { /* ignore */ }
     }
     load()
-  }, [])
+  })
 
   async function loadAggregatedAISummary(fields) {
     if (!fields?.length) return
@@ -138,223 +143,135 @@ export default function FarmerHome() {
     }
   }
 
-  const stats = useMemo(() => {
-    const totalFields = fields.length
-    const activeLoans = (apps||[]).filter(x => x.status === 'approved').length
-    const scores = (fields||[]).map(f => f.latestClimaScore).filter(s => typeof s === 'number')
-    const avgScore = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : '—'
-    const advisories = aiSummary?.fertilizerRecommendations?.recommendations?.length || 0
-    return { totalFields, activeLoans, avgScore, advisories }
-  }, [fields, apps, aiSummary])
 
   return (
-    <div>
-      {/* AI Insights Summary */}
-      {aiSummary && (
-        <div className="ai-insights-card">
-          <div className="ai-insights-header">
-            <div className="ai-insights-title">
-              <div className="ai-icon">🤖</div>
-              <div>
-                <h3>AI Portfolio Insights</h3>
-                <div className="ai-subtitle">Powered by advanced field analytics</div>
-              </div>
+    <div className="">
+      {/* AI insights moved to the right column (sidebar) */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-6">
+          <GreetingHeader user={user} aiSummary={aiSummary} />
+
+          {/* Quick Actions */}
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold text-slate-200 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button
+                className="group rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 text-left p-5 transition-all duration-200 hover:scale-[1.02]"
+                onClick={()=>navigate('/dashboard/farmer/fields')}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-300">
+                    <MapIcon className="w-6 h-6" />
+                  </div>
+                  <div className="text-slate-200 font-semibold">Manage Fields</div>
+                  <ArrowRightIcon className="ml-auto w-4 h-4 text-blue-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-slate-400 text-sm">Map boundaries, register sensors, view analytics</div>
+              </button>
+
+              <button
+                className="group rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left p-5 transition-all duration-200 hover:scale-[1.02]"
+                onClick={()=>navigate('/dashboard/farmer/applications')}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/20 flex items-center justify-center text-amber-300">
+                    <BanknotesIcon className="w-6 h-6" />
+                  </div>
+                  <div className="text-slate-200 font-semibold">Financing</div>
+                  <ArrowRightIcon className="ml-auto w-4 h-4 text-amber-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-slate-400 text-sm">Apply for funding, track applications</div>
+              </button>
+
+              <button
+                className="group rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left p-5 transition-all duration-200 hover:scale-[1.02]"
+                onClick={()=>navigate('/dashboard/farmer/advisory')}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-300">
+                    <CpuChipIcon className="w-6 h-6" />
+                  </div>
+                  <div className="text-slate-200 font-semibold">AI Advisory</div>
+                  <ArrowRightIcon className="ml-auto w-4 h-4 text-emerald-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-slate-400 text-sm">Personalized recommendations, risk alerts</div>
+              </button>
+
+              <button
+                className="group rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 text-left p-5 transition-all duration-200 hover:scale-[1.02]"
+                onClick={()=>navigate('/dashboard/farmer/resources')}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-10 h-10 rounded-lg bg-slate-700/60 flex items-center justify-center text-slate-300">
+                    <BookOpenIcon className="w-6 h-6" />
+                  </div>
+                  <div className="text-slate-200 font-semibold">Resources</div>
+                  <ArrowRightIcon className="ml-auto w-4 h-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
+                </div>
+                <div className="text-slate-400 text-sm">Guides, best practices, learning materials</div>
+              </button>
             </div>
-            <button className="btn-ai-view" onClick={() => navigate('/dashboard/farmer/advisory')}>
-              <span>View Details</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M7 17l9.2-9.2M17 17V7H7"/>
-              </svg>
-            </button>
           </div>
-          
-          <div className="ai-metrics-grid">
-            {aiSummary.fieldHealthScore && (
-              <div className="ai-metric-card health">
-                <div className="metric-icon">🌱</div>
-                <div className="metric-content">
-                  <div className="metric-label">Portfolio Health</div>
-                  <div className="metric-value" data-status={aiSummary.fieldHealthScore.overallScore > 80 ? 'excellent' : aiSummary.fieldHealthScore.overallScore > 60 ? 'good' : 'poor'}>
-                    {aiSummary.fieldHealthScore.overallScore}<span className="metric-unit">/100</span>
-                  </div>
-                  <div className="metric-status">{aiSummary.fieldHealthScore.status}</div>
-                </div>
-              </div>
-            )}
-            
-            {aiSummary.yieldPrediction && (
-              <div className="ai-metric-card yield">
-                <div className="metric-icon">📊</div>
-                <div className="metric-content">
-                  <div className="metric-label">Expected Yield</div>
-                  <div className="metric-value">
-                    {aiSummary.yieldPrediction.estimatedYield}<span className="metric-unit">t</span>
-                  </div>
-                  <div className="metric-status">Total across portfolio</div>
-                </div>
-              </div>
-            )}
-            
-            {aiSummary.vegetationSummary && (
-              <div className="ai-metric-card vegetation">
-                <div className="metric-icon">🛰️</div>
-                <div className="metric-content">
-                  <div className="metric-label">Vegetation Health</div>
-                  <div className="metric-value" data-status={aiSummary.vegetationSummary.healthPercentage > 80 ? 'excellent' : aiSummary.vegetationSummary.healthPercentage > 60 ? 'good' : 'poor'}>
-                    {aiSummary.vegetationSummary.healthyFields}<span className="metric-separator">/</span>{aiSummary.vegetationSummary.totalAnalyzed}
-                  </div>
-                  <div className="metric-status">{aiSummary.vegetationSummary.healthPercentage}% healthy fields</div>
-                </div>
-              </div>
-            )}
-            
-            {aiSummary.soilAnalysis && (
-              <div className="ai-metric-card soil">
-                <div className="metric-icon">🌍</div>
-                <div className="metric-content">
-                  <div className="metric-label">Soil Quality</div>
-                  <div className="metric-value" data-status={aiSummary.soilAnalysis.overallHealth > 80 ? 'excellent' : aiSummary.soilAnalysis.overallHealth > 60 ? 'good' : 'poor'}>
-                    {aiSummary.soilAnalysis.overallHealth}<span className="metric-unit">/100</span>
-                  </div>
-                  <div className="metric-status">{aiSummary.soilAnalysis.status}</div>
-                </div>
-              </div>
-            )}
-          </div>
-          
-          {/* AI Insights Tags */}
-          {(aiSummary.fertilizerRecommendations?.totalRecommendations > 0 || 
-            aiSummary.plantingWindowAdvice?.nextBestWindow || 
-            aiSummary.riskWarnings?.length > 0) && (
-            <div className="ai-insights-tags">
-              <div className="insights-tags-label">Key Insights</div>
-              <div className="insights-tags-container">
-                {aiSummary.isAggregated && aiSummary.analyzedFields && (
-                  <div className="insight-tag coverage">
-                    <span className="tag-icon">📋</span>
-                    <span>{aiSummary.analyzedFields}/{aiSummary.totalFields} fields analyzed</span>
-                  </div>
-                )}
-                
-                {aiSummary.fertilizerRecommendations?.highPriority > 0 && (
-                  <div className="insight-tag urgent">
-                    <span className="tag-icon">⚡</span>
-                    <span>{aiSummary.fertilizerRecommendations.highPriority} urgent needs</span>
-                  </div>
-                )}
-                
-                {aiSummary.fertilizerRecommendations?.totalRecommendations > 0 && (
-                  <div className="insight-tag recommendations">
-                    <span className="tag-icon">💡</span>
-                    <span>{aiSummary.fertilizerRecommendations.totalRecommendations} recommendations</span>
-                  </div>
-                )}
-                
-                {aiSummary.plantingWindowAdvice?.nextBestWindow && (
-                  <div className="insight-tag planting">
-                    <span className="tag-icon">🌱</span>
-                    <span>Next window: {aiSummary.plantingWindowAdvice.nextBestWindow.daysUntil} days</span>
-                  </div>
-                )}
-                
-                {aiSummary.riskWarnings?.length > 0 && (
-                  <div className="insight-tag warning">
-                    <span className="tag-icon">⚠️</span>
-                    <span>{aiSummary.riskWarnings.length} risk alert{aiSummary.riskWarnings.length > 1 ? 's' : ''}</span>
-                  </div>
-                )}
-              </div>
+
+          {/* Field Snapshots */}
+          <div className="mt-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-slate-200">My Fields</h2>
+              <button 
+                onClick={() => navigate('/dashboard/farmer/fields')}
+                className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                View all →
+              </button>
             </div>
+            <FieldSnapshots fields={fields} onOpen={() => navigate('/dashboard/farmer/fields')} />
+          </div>
+        </div>
+
+        {/* Sidebar (narrow column) */}
+        <div className="space-y-6 border-[1.6px] border-gray-800 rounded-xl p-4 flex flex-col">
+          {aiSummary ? (
+            <AiPortfolioInsights aiSummary={aiSummary} onView={() => navigate('/dashboard/farmer/advisory')} compact />
+          ) : (
+            !loadingAI && (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-md bg-sky-500/20 flex items-center justify-center">
+                    <CpuChipIcon className="w-5 h-5 text-sky-300" />
+                  </div>
+                  <div className="text-slate-300 text-sm">
+                    <div className="font-medium text-slate-200 mb-0.5">AI Analysis Available</div>
+                    <div>Get personalized insights across all your fields.</div>
+                  </div>
+                </div>
+                <button className="mt-3 inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-sky-200 text-sm hover:bg-sky-500/15" onClick={() => loadAggregatedAISummary(fields)}>
+                  Load Portfolio Insights <ArrowRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+            )
           )}
-        </div>
-      )}
-    
-    {!aiSummary && !loadingAI && fields.length > 0 && (
-      <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
-        <div className="row" style={{alignItems: 'center'}}>
-          <div className="col">
-            <strong>🤖 AI Analysis Available</strong>: Get personalized insights across all your fields.
+
+          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+            <h3 className="text-sm font-semibold text-slate-300 mb-3">Application Status</h3>
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Approved</span>
+                <span className="text-emerald-400 font-medium">{(apps||[]).filter(a=>a.status==='approved').length}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Pending</span>
+                <span className="text-amber-400 font-medium">{(apps||[]).filter(a=>a.status==='pending').length}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-400">Denied</span>
+                <span className="text-rose-400 font-medium">{(apps||[]).filter(a=>a.status==='denied').length}</span>
+              </div>
+            </div>
           </div>
-          <div>
-            <button className="btn btn-sm" onClick={() => loadAggregatedAISummary(fields)}>
-              Load Portfolio Insights
-            </button>
-          </div>
         </div>
-      </div>
-    )}
-    
-    {!aiSummary && !loadingAI && fields.length === 0 && (
-      <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
-        <strong>Welcome!</strong> Create your first field to get AI-powered farming insights.
-      </div>
-    )}
-    {/* KPI Summary */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
-      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
-        <div className="text-slate-400 text-xs">Total Fields</div>
-        <div className="text-2xl font-semibold text-emerald-400">{stats.totalFields}</div>
-      </div>
-      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
-        <div className="text-slate-400 text-xs">Active Loans</div>
-        <div className="text-2xl font-semibold text-amber-400">{stats.activeLoans}</div>
-      </div>
-      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
-        <div className="text-slate-400 text-xs">Average Field Score</div>
-        <div className="text-2xl font-semibold text-sky-400">{stats.avgScore}</div>
-      </div>
-      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
-        <div className="text-slate-400 text-xs">AI Recommendations</div>
-        <div className="text-2xl font-semibold text-blue-400">{stats.advisories}</div>
       </div>
     </div>
-
-    {/* Quick Actions / Navigation Widgets */}
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
-      <button
-        className="group rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 text-left p-4 transition-colors"
-        onClick={()=>navigate('/dashboard/farmer/fields')}
-      >
-        <div className="flex items-center justify-between">
-          <div className="text-slate-200 font-semibold">Map & Manage Fields</div>
-          <span className="text-blue-300 group-hover:translate-x-0.5 transition-transform">→</span>
-        </div>
-        <div className="text-slate-400 text-sm mt-1">Draw new fields, view boundaries, register sensors.</div>
-      </button>
-
-      <button
-        className="group rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left p-4 transition-colors"
-        onClick={()=>navigate('/dashboard/farmer/applications')}
-      >
-        <div className="flex items-center justify-between">
-          <div className="text-slate-200 font-semibold">Financing & Applications</div>
-          <span className="text-amber-300 group-hover:translate-x-0.5 transition-transform">→</span>
-        </div>
-        <div className="text-slate-400 text-sm mt-1">Apply for funding and track application status.</div>
-      </button>
-
-      <button
-        className="group rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left p-4 transition-colors"
-        onClick={()=>navigate('/dashboard/farmer/advisory')}
-      >
-        <div className="flex items-center justify-between">
-          <div className="text-slate-200 font-semibold">AI Advisory</div>
-          <span className="text-emerald-300 group-hover:translate-x-0.5 transition-transform">→</span>
-        </div>
-        <div className="text-slate-400 text-sm mt-1">Get personalized recommendations and risk alerts.</div>
-      </button>
-
-      <button
-        className="group rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 text-left p-4 transition-colors"
-        onClick={()=>navigate('/dashboard/farmer/resources')}
-      >
-        <div className="flex items-center justify-between">
-          <div className="text-slate-200 font-semibold">Resources & Learning</div>
-          <span className="text-slate-300 group-hover:translate-x-0.5 transition-transform">→</span>
-        </div>
-        <div className="text-slate-400 text-sm mt-1">Guides, best practices, and reference materials.</div>
-      </button>
-    </div>
-  </div>
-)
+  )
 }

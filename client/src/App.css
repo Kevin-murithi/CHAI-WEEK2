@@ -32,7 +32,7 @@ h3 { margin: 0; font-size: 16px; letter-spacing: 0.2px; }
 label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
 input, select { width: 100%; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--border); background: #0b1324; color: var(--text); font-size: 14px; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
 input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
-button { padding: 9px 13px; border: 1px solid #245b9e; background: #2e74cc; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: filter .15s ease, transform .02s ease; }
+button { padding: 9px 13px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: filter .15s ease, transform .02s ease; }
 button:hover { filter: brightness(1.05); }
 button:active { transform: translateY(1px); }
 button[disabled] { opacity: 0.6; cursor: default; }
