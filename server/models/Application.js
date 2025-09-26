@@ -17,6 +17,7 @@ const ApplicationSchema = new mongoose.Schema({
   status: { type: String, enum: ['pending','approved','denied','needs_info'], default: 'pending' },
   lenderDecision: { type: DecisionSchema, default: null },
   climascoreSnapshot: { type: Object, required: true },
+  fieldMetadataSnapshot: { type: Object, default: null },
 }, { timestamps: true });
 
 module.exports = mongoose.model('application', ApplicationSchema);

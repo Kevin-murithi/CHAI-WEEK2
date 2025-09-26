@@ -48,12 +48,12 @@ function approximateAreaHa(polygon) {
 
 module.exports.createField = async (req, res) => {
   try {
-    const { name, geometry } = req.body;
+    const { name, geometry, metadata } = req.body;
     if (!name || !geometry || geometry.type !== 'Polygon') {
       return res.status(400).json({ error: 'name and geometry Polygon required' });
     }
     const areaHa = approximateAreaHa(geometry);
-    const field = await Field.create({ owner: req.user.id, name, geometry, areaHa });
+    const field = await Field.create({ owner: req.user.id, name, geometry, areaHa, metadata: metadata || {} });
     
     // Calculate initial ClimaScore for the field
     try {
@@ -112,7 +112,7 @@ module.exports.getField = async (req, res) => {
 
 module.exports.createApplication = async (req, res) => {
   try {
-    const { fieldId, crop, plantingDate, requestedAmount, source } = req.body;
+    const { fieldId, crop, plantingDate, requestedAmount, source, fieldMetadata } = req.body;
     if (!fieldId || !crop || !plantingDate || !requestedAmount) {
       return res.status(400).json({ error: 'fieldId, crop, plantingDate, requestedAmount are required' });
     }
@@ -123,6 +123,11 @@ module.exports.createApplication = async (req, res) => {
     const lastApp = await Application.findOne({ field: fieldId, farmer: req.user.id }).sort({ createdAt: -1 }).lean();
     if (lastApp && (lastApp.status === 'pending' || lastApp.status === 'approved')) {
       return res.status(400).json({ error: 'An application for this field is already pending or approved. You can only reapply if it was denied.' });
+    }
+
+    // Optionally update field metadata if provided
+    if (fieldMetadata && typeof fieldMetadata === 'object') {
+      await Field.updateOne({ _id: field._id }, { $set: { metadata: fieldMetadata } })
     }
 
     const ctr = polygonCentroid(field.geometry);
@@ -141,7 +146,8 @@ module.exports.createApplication = async (req, res) => {
       requestedAmount: Number(requestedAmount),
       status: 'pending',
       lenderDecision: null,
-      climascoreSnapshot: snapshot
+      climascoreSnapshot: snapshot,
+      fieldMetadataSnapshot: field.metadata || null
     });
 
     res.status(201).json({ application });

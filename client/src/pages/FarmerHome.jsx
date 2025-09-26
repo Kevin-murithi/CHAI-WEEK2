@@ -1,36 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import FarmerMap from '../components/FarmerMap'
 import '../styles/ai-insights.css'
-import EnhancedClimaScore from '../components/EnhancedClimaScore.jsx'
 
-function StatCard({ label, value }) {
-  return (
-    <div className="card kpi" style={{minWidth:180}}>
-      <div className="kpi-label">{label}</div>
-      <div className="kpi-value">{value}</div>
-    </div>
-  )
-}
-
-function Legend() {
-  const item = (color, label) => (
-    <div className="row" style={{gap:6}}>
-      <div style={{width:10, height:10, borderRadius:2, background:color}} />
-      <span className="small muted">{label}</span>
-    </div>
-  )
-  return (
-    <div className="card sub" style={{maxWidth:280}}>
-      <div className="muted small" style={{marginBottom:6}}>Field Color Legend</div>
-      {item('#22c55e', 'Green (Score ≥ 67)')}
-      {item('#eab308', 'Yellow (34–66)')}
-      {item('#ef4444', 'Red (≤ 33)')}
-      {item('#64748b', 'Unknown')}
-    </div>
-  )
-}
+// Home page focuses on summary and navigation; mapping moved to FarmerFieldsPage
 
 export default function FarmerHome() {
   const navigate = useNavigate()
@@ -296,53 +268,93 @@ export default function FarmerHome() {
           )}
         </div>
       )}
-      
-      {loadingAI && (
-        <div className="ai-loading-card">
-          <div className="ai-loading-spinner"></div>
-          <span style={{color: '#64748b', fontWeight: 500}}>Analyzing portfolio with AI...</span>
-        </div>
-      )}
-      
-      {!aiSummary && !loadingAI && fields.length > 0 && (
-        <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
-          <div className="row" style={{alignItems: 'center'}}>
-            <div className="col">
-              <strong>🤖 AI Analysis Available</strong>: Get personalized insights across all your fields.
-            </div>
-            <div>
-              <button className="btn btn-sm" onClick={() => loadAggregatedAISummary(fields)}>
-                Load Portfolio Insights
-              </button>
-            </div>
+    
+    {!aiSummary && !loadingAI && fields.length > 0 && (
+      <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
+        <div className="row" style={{alignItems: 'center'}}>
+          <div className="col">
+            <strong>🤖 AI Analysis Available</strong>: Get personalized insights across all your fields.
+          </div>
+          <div>
+            <button className="btn btn-sm" onClick={() => loadAggregatedAISummary(fields)}>
+              Load Portfolio Insights
+            </button>
           </div>
         </div>
-      )}
-      
-      {!aiSummary && !loadingAI && fields.length === 0 && (
-        <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
-          <strong>Welcome!</strong> Create your first field to get AI-powered farming insights.
-        </div>
-      )}
-      <div className="row" style={{marginTop:12}}>
-        <StatCard label="Total Fields" value={stats.totalFields} />
-        <StatCard label="Active Loans" value={stats.activeLoans} />
-        <StatCard label="Average Field Score" value={stats.avgScore} />
-        <StatCard label="AI Recommendations" value={stats.advisories} />
       </div>
-      <div className="row" style={{marginTop:12, justifyContent:'space-between', alignItems:'center'}}>
-        <Legend />
-        <div>
-          <button className="btn btn-primary" onClick={() => {
-            const el = document.getElementById('farmer-map');
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }}>Map New Field</button>
-          <button className="btn btn-secondary" onClick={()=>navigate('/dashboard/farmer/financing')}>Apply for Loan</button>
-        </div>
+    )}
+    
+    {!aiSummary && !loadingAI && fields.length === 0 && (
+      <div className="card" style={{borderLeft:'4px solid #eab308', marginBottom: 12}}>
+        <strong>Welcome!</strong> Create your first field to get AI-powered farming insights.
       </div>
-      <div id="farmer-map" style={{marginTop:12}}>
-        <FarmerMap />
+    )}
+    {/* KPI Summary */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-3">
+      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
+        <div className="text-slate-400 text-xs">Total Fields</div>
+        <div className="text-2xl font-semibold text-emerald-400">{stats.totalFields}</div>
+      </div>
+      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
+        <div className="text-slate-400 text-xs">Active Loans</div>
+        <div className="text-2xl font-semibold text-amber-400">{stats.activeLoans}</div>
+      </div>
+      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
+        <div className="text-slate-400 text-xs">Average Field Score</div>
+        <div className="text-2xl font-semibold text-sky-400">{stats.avgScore}</div>
+      </div>
+      <div className="rounded-lg border border-slate-800/60 bg-slate-900/60 p-3">
+        <div className="text-slate-400 text-xs">AI Recommendations</div>
+        <div className="text-2xl font-semibold text-blue-400">{stats.advisories}</div>
       </div>
     </div>
-  )
+
+    {/* Quick Actions / Navigation Widgets */}
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
+      <button
+        className="group rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 text-left p-4 transition-colors"
+        onClick={()=>navigate('/dashboard/farmer/fields')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-slate-200 font-semibold">Map & Manage Fields</div>
+          <span className="text-blue-300 group-hover:translate-x-0.5 transition-transform">→</span>
+        </div>
+        <div className="text-slate-400 text-sm mt-1">Draw new fields, view boundaries, register sensors.</div>
+      </button>
+
+      <button
+        className="group rounded-xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/15 text-left p-4 transition-colors"
+        onClick={()=>navigate('/dashboard/farmer/applications')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-slate-200 font-semibold">Financing & Applications</div>
+          <span className="text-amber-300 group-hover:translate-x-0.5 transition-transform">→</span>
+        </div>
+        <div className="text-slate-400 text-sm mt-1">Apply for funding and track application status.</div>
+      </button>
+
+      <button
+        className="group rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 text-left p-4 transition-colors"
+        onClick={()=>navigate('/dashboard/farmer/advisory')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-slate-200 font-semibold">AI Advisory</div>
+          <span className="text-emerald-300 group-hover:translate-x-0.5 transition-transform">→</span>
+        </div>
+        <div className="text-slate-400 text-sm mt-1">Get personalized recommendations and risk alerts.</div>
+      </button>
+
+      <button
+        className="group rounded-xl border border-slate-700/60 bg-slate-800/60 hover:bg-slate-800 text-left p-4 transition-colors"
+        onClick={()=>navigate('/dashboard/farmer/resources')}
+      >
+        <div className="flex items-center justify-between">
+          <div className="text-slate-200 font-semibold">Resources & Learning</div>
+          <span className="text-slate-300 group-hover:translate-x-0.5 transition-transform">→</span>
+        </div>
+        <div className="text-slate-400 text-sm mt-1">Guides, best practices, and reference materials.</div>
+      </button>
+    </div>
+  </div>
+)
 }

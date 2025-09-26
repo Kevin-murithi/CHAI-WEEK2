@@ -15,6 +15,15 @@ const FieldSchema = new mongoose.Schema({
   areaHa: { type: Number, default: 0 },
   latestClimaScore: { type: Number, default: null },
   latestRiskBreakdown: { type: Object, default: null },
+  metadata: {
+    crops: { type: [String], default: [] },
+    plantingMethod: { type: String, default: '' },
+    harvestingMethod: { type: String, default: '' },
+    irrigation: { type: String, default: '' },
+    soilType: { type: String, default: '' },
+    ownership: { type: String, default: '' },
+    notes: { type: String, default: '' },
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('field', FieldSchema);

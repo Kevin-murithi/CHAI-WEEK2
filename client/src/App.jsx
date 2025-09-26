@@ -4,9 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, NavLink, Out
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import ClimaScoreLogo from './components/ClimaScoreLogo.jsx'
 import ClimaPanel from './components/ClimaPanel.jsx'
-import FarmerMap from './components/FarmerMap.jsx'
-import FarmerFields from './components/FarmerFields.jsx'
-import LenderConsole from './components/LenderConsole.jsx'
 import FarmerHome from './pages/FarmerHome.jsx'
 import FarmerFieldsPage from './pages/FarmerFieldsPage.jsx'
 import FarmerFinancing from './pages/FarmerFinancing.jsx'
@@ -135,19 +132,17 @@ function Login() {
       setEmail(creds.email); setPassword(creds.password)
       try {
         await login({ email: creds.email, password: creds.password })
-      } catch (_) {
+      } catch {
         // Attempt to register then login
         try {
           await register(creds)
-        } catch (e) {
-          // Ignore if already exists; proceed to login
-        }
+        } catch { /* ignore if already exists */ }
         await login({ email: creds.email, password: creds.password })
       }
       // Navigation handled by effect below; but we can proactively navigate based on role
       const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
       navigate(dest, { replace: true })
-    } catch (e) {
+    } catch {
       setError('Quick login failed')
     } finally {
       setLoading(false)
