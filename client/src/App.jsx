@@ -1,12 +1,10 @@
 import './App.css'
-import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { useState } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import ClimaScoreLogo from './components/ClimaScoreLogo.jsx'
-import ClimaPanel from './components/ClimaPanel.jsx'
 import FarmerHome from './pages/FarmerHome.jsx'
 import FarmerFieldsPage from './pages/FarmerFieldsPage.jsx'
-import FarmerFinancing from './pages/FarmerFinancing.jsx'
 import FarmerApplications from './pages/FarmerApplications.jsx'
 import FarmerAdvisory from './pages/FarmerAdvisory.jsx'
 import FarmerResources from './pages/FarmerResources.jsx'
@@ -16,11 +14,14 @@ import LenderApplication from './pages/LenderApplication.jsx'
 import LenderPortfolio from './pages/LenderPortfolio.jsx'
 import LenderAdmin from './pages/LenderAdmin.jsx'
 import ColdStorageDashboard from './pages/ColdStorageDashboard.jsx'
+import AuthLanding from './pages/AuthLanding.jsx'
+import SignIn from './pages/SignIn.jsx'
+import Register from './pages/Register.jsx'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
   if (loading) return <div className="container"><div className="card">Loading...</div></div>
-  if (!user) return <Navigate to="/login" replace />
+  if (!user) return <Navigate to="/signin" replace />
   if (roles && roles.length && !roles.includes(user.role)) return <Navigate to="/" replace />
   return children
 }
@@ -62,7 +63,7 @@ function NavBar() {
       <div>
         {!user && (
           <>
-            <Link to="/login" className="link">Login</Link>
+            <Link to="/signin" className="link">Sign in</Link>
             <span style={{margin:'0 8px'}}>|</span>
             <Link to="/register" className="link">Register</Link>
           </>
@@ -72,326 +73,7 @@ function NavBar() {
   )
 }
 
-function Home() {
-  // This component is no longer used as a public landing; kept for reference.
-  return null
-}
-
-function Login() {
-  const { login, user, register } = useAuth()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [fieldErrors, setFieldErrors] = useState({ email: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showForm, setShowForm] = useState(true)
-
-  // Responsive: on mobile start with hero first, hide the form until CTA tap
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    const update = () => setShowForm(!mq.matches ? true : false)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-
-  function validate() {
-    const errs = { email: '', password: '' }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) errs.email = 'Enter a valid email address'
-    if (!password) errs.password = 'Password is required'
-    setFieldErrors(errs)
-    return !errs.email && !errs.password
-  }
-  async function onSubmit(e) {
-    e.preventDefault()
-    try { 
-      setLoading(true); setError('');
-      if (!validate()) return
-      await login({ email, password })
-      // navigate after login based on role
-      const role = (user?.role) || 'farmer'
-      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-      navigate(dest, { replace: true })
-    } catch(e) { 
-      setError(e.message) 
-    } finally { setLoading(false) }
-  }
-
-  // Dev helper: quick login by role; if user doesn't exist, auto-register and then login
-  async function quickLogin(role) {
-    try {
-      setError(''); setLoading(true)
-      const creds = {
-        farmer: { email: 'farmer.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Farmer', role: 'farmer' },
-        lender: { email: 'lender.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Lender', role: 'lender' },
-        cold_storage_owner: { email: 'cold.dev@demo.local', password: 'password123', firstName: 'Dev', lastName: 'Cold', role: 'cold_storage_owner' },
-      }[role]
-      if (!creds) return
-      setEmail(creds.email); setPassword(creds.password)
-      try {
-        await login({ email: creds.email, password: creds.password })
-      } catch {
-        // Attempt to register then login
-        try {
-          await register(creds)
-        } catch { /* ignore if already exists */ }
-        await login({ email: creds.email, password: creds.password })
-      }
-      // Navigation handled by effect below; but we can proactively navigate based on role
-      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-      navigate(dest, { replace: true })
-    } catch {
-      setError('Quick login failed')
-    } finally {
-      setLoading(false)
-    }
-  }
-  useEffect(() => {
-    if (user?.role) {
-      const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-      navigate(dest, { replace: true })
-    }
-  }, [user, navigate])
-  const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !!password
-  return (
-    <div className="auth-wrapper">
-      <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner">
-          <div style={{textAlign:'center'}}>
-            <ClimaScoreLogo size={56} className="mb-3" />
-            <div className="auth-title">Welcome back</div>
-          </div>
-          <div className="auth-sub">ClimaScore is an AI-powered platform for Farmers, Lenders and Cold Storage Owners.</div>
-          <span className="hero-caption">Secure. Transparent. Built for agriculture.</span>
-          <div className="cta">
-            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Sign in</button>}
-            <Link to="/register" className="btn btn-secondary">Create account</Link>
-          </div>
-
-          {/* Role Cards Row (Dev Quick Login) */}
-          <div style={{display:'flex', width:'100%', gap:16, marginTop:16, alignItems:'stretch', justifyContent:'space-around', flexWrap:'nowrap'}}>
-            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
-              <div className="text-slate-200 text-lg font-semibold">Farmer</div>
-              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
-                <li>Track field risk with ClimaScore</li>
-                <li>Personalized AI advisories</li>
-                <li>Access financing and manage applications</li>
-              </ul>
-              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
-                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('farmer')} disabled={loading}>Quick login as Farmer</button>
-              </div>
-            </div>
-            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
-              <div className="text-slate-200 text-lg font-semibold">Lender</div>
-              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
-                <li>Risk console with transparent scoring</li>
-                <li>Application queue and screening</li>
-                <li>Portfolio monitoring and reporting</li>
-              </ul>
-              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
-                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('lender')} disabled={loading}>Quick login as Lender</button>
-              </div>
-            </div>
-            <div className="card" style={{padding:16, flex:'0 0 calc((100% - 32px)/3)', maxWidth:'calc((100% - 32px)/3)', minWidth:200}}>
-              <div className="text-slate-200 text-lg font-semibold">Cold Storage Owner</div>
-              <ul className="small" style={{marginTop:8, paddingLeft:18}}>
-                <li>Track facilities and locations</li>
-                <li>Monitor temperatures & humidity</li>
-                <li>View utilization, alerts and status</li>
-              </ul>
-              <div style={{marginTop:12, display:'flex', justifyContent:'flex-start'}}>
-                <button className={`btn btn-blue btn-sm${loading ? ' loading' : ''}`} onClick={()=>quickLogin('cold_storage_owner')} disabled={loading}>Quick login as Cold Storage</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-panel">
-          <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12}}>
-            <ClimaScoreLogo size={40} />
-            <h2 style={{margin:0}}>Sign in</h2>
-          </div>
-          <form className="form" onSubmit={onSubmit} noValidate>
-            <div className="row">
-              <div className="col">
-                <label>Email</label>
-                <input type="email" placeholder="you@example.com" value={email} onChange={e=>setEmail(e.target.value)} aria-invalid={!!fieldErrors.email} />
-                {fieldErrors.email && <div className="input-error">{fieldErrors.email}</div>}
-              </div>
-            </div>
-            <div className="row">
-              <div className="col">
-                <label>Password</label>
-                <div className="password-field">
-                  <input type={showPassword? 'text':'password'} placeholder="Enter your password" value={password} onChange={e=>setPassword(e.target.value)} aria-invalid={!!fieldErrors.password} />
-                  <button type="button" className="password-toggle" aria-label={showPassword? 'Hide password':'Show password'} title={showPassword? 'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>
-                    {showPassword ? (
-                      // Eye-off icon
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.78 2.98-5.02 5.5-6.41"/>
-                        <path d="M1 1l22 22"/>
-                        <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>
-                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.66 11.66 0 0 1-2.17 3.19"/>
-                      </svg>
-                    ) : (
-                      // Eye icon
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
-              </div>
-            </div>
-            {error && <div className="error">{error}</div>}
-            <div className="form-actions">
-              <button className={`btn btn-primary${loading ? ' loading' : ''}`} aria-busy={loading} disabled={!isValid || loading}>
-                {loading ? 'Logging in' : 'Login'}{loading && <span className="spinner" />}
-              </button>
-            </div>
-          </form>
-          <div className="auth-footer">Don't have an account? <Link to="/register">Create one</Link></div>
-        </div>
-      </section>
-    </div>
-  )
-}
-
-function Register() {
-  const { register, user } = useAuth()
-  const navigate = useNavigate()
-  const [form, setForm] = useState({ email:'', password:'', firstName:'', lastName:'', role:'farmer' })
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState({ firstName:'', lastName:'', email:'', password:'' })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showForm, setShowForm] = useState(true)
-  function setField(k,v){ setForm(prev=>({ ...prev, [k]: v })) }
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 768px)')
-    const update = () => setShowForm(!mq.matches ? true : false)
-    update()
-    mq.addEventListener('change', update)
-    return () => mq.removeEventListener('change', update)
-  }, [])
-  function validate(){
-    const errs = { firstName:'', lastName:'', email:'', password:'' }
-    if (!form.firstName.trim()) errs.firstName = 'First name is required'
-    if (!form.lastName.trim()) errs.lastName = 'Last name is required'
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.email = 'Enter a valid email address'
-    if (form.password.length < 6) errs.password = 'Password should be at least 6 characters'
-    setFieldErrors(errs)
-    return !errs.firstName && !errs.lastName && !errs.email && !errs.password
-  }
-  async function onSubmit(e) { 
-    e.preventDefault(); 
-    try { 
-      setLoading(true); setError('');
-      if (!validate()) return
-      await register(form) 
-      const role = (user?.role) || form.role || 'farmer'
-      const dest = role === 'lender' ? '/dashboard/lender' : role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-      navigate(dest, { replace: true })
-    } catch(e){ 
-      setError(e.message) 
-    } finally { setLoading(false) } 
-  }
-  useEffect(() => {
-    if (user?.role) {
-      const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-      navigate(dest, { replace: true })
-    }
-  }, [user, navigate])
-  const isValid = !!form.firstName.trim() && !!form.lastName.trim() && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.password.length >= 6
-  return (
-    <div className="auth-wrapper">
-      <section className={`auth-hero ${showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-hero-inner">
-          <div style={{textAlign:'center'}}>
-            <ClimaScoreLogo size={96} className="mb-3" />
-            <div className="auth-title">Create your account</div>
-          </div>
-          <div className="auth-sub">Join ClimaScore to put AI-driven climate intelligence to work.</div>
-          <ul className="hero-points" aria-label="Platform benefits">
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Farmers</strong>: Personalized advisories, field monitoring, and financing access.</span></li>
-            <li><span className="dot" aria-hidden="true"></span><span><strong>For Lenders</strong>: Objective climate scoring and portfolio risk visibility.</span></li>
-          </ul>
-          <span className="hero-caption">Built for resilience. Powered by data.</span>
-          <div className="cta">
-            {!showForm && <button className="btn btn-primary" onClick={()=>setShowForm(true)}>Get started</button>}
-            <Link to="/login" className="btn btn-secondary">Sign in</Link>
-          </div>
-        </div>
-      </section>
-
-      <section className={`auth-card ${!showForm ? 'auth-section-hidden' : ''}`}>
-        <div className="auth-panel">
-          <div style={{display:'flex', alignItems:'center', justifyContent:'center', gap:8, marginBottom:12}}>
-            <ClimaScoreLogo size={48} />
-            <h2 style={{margin:0}}>Sign up</h2>
-          </div>
-          <form className="form" onSubmit={onSubmit} noValidate>
-            <div className="row">
-              <div className="col">
-                <label>First Name</label>
-                <input placeholder="Jane" value={form.firstName} onChange={e=>setField('firstName', e.target.value)} aria-invalid={!!fieldErrors.firstName} />
-                {fieldErrors.firstName && <div className="input-error">{fieldErrors.firstName}</div>}
-              </div>
-              <div className="col">
-                <label>Last Name</label>
-                <input placeholder="Doe" value={form.lastName} onChange={e=>setField('lastName', e.target.value)} aria-invalid={!!fieldErrors.lastName} />
-                {fieldErrors.lastName && <div className="input-error">{fieldErrors.lastName}</div>}
-              </div>
-            </div>
-            <div className="row">
-              <div className="col">
-                <label>Email</label>
-                <input type="email" placeholder="you@example.com" value={form.email} onChange={e=>setField('email', e.target.value)} aria-invalid={!!fieldErrors.email} />
-                {fieldErrors.email && <div className="input-error">{fieldErrors.email}</div>}
-              </div>
-              <div className="col">
-                <label>Password</label>
-                <div className="password-field">
-                  <input type={showPassword? 'text':'password'} placeholder="Create password" value={form.password} onChange={e=>setField('password', e.target.value)} aria-invalid={!!fieldErrors.password} />
-                  <button type="button" className="password-toggle" aria-label={showPassword? 'Hide password':'Show password'} title={showPassword? 'Hide password':'Show password'} onClick={()=>setShowPassword(v=>!v)}>
-                    {showPassword ? (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-5 0-9.27-3.11-11-8 1.02-2.78 2.98-5.02 5.5-6.41"/>
-                        <path d="M1 1l22 22"/>
-                        <path d="M9.88 9.88a3 3 0 0 0 4.24 4.24"/>
-                        <path d="M10.73 5.08A10.94 10.94 0 0 1 12 4c5 0 9.27 3.11 11 8a11.66 11.66 0 0 1-2.17 3.19"/>
-                      </svg>
-                    ) : (
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                      </svg>
-                    )}
-                  </button>
-                </div>
-                {fieldErrors.password && <div className="input-error">{fieldErrors.password}</div>}
-              </div>
-            </div>
-            <div className="row"><div className="col"><label>Account Type</label><select value={form.role} onChange={e=>setField('role', e.target.value)}><option value="farmer">Farmer</option><option value="lender">Lender</option><option value="cold_storage_owner">Cold Storage Owner</option></select></div></div>
-            {error && <div className="error">{error}</div>}
-            <div className="form-actions">
-              <button className={`btn btn-primary${loading ? ' loading' : ''}`} aria-busy={loading} disabled={!isValid || loading}>
-                {loading ? 'Creating' : 'Create Account'}{loading && <span className="spinner" />}
-              </button>
-            </div>
-          </form>
-          <div className="auth-footer">Already have an account? <Link to="/login">Sign in</Link></div>
-        </div>
-      </section>
-    </div>
-  )
-}
+// Removed old Home, Login, and Register inline components in favor of isolated pages
 
 function Icon({ name, className }) {
   const props = { className: `w-5 h-5 ${className||''}`, fill: 'none', stroke: 'currentColor', strokeWidth: 1.6 }
@@ -519,10 +201,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ConditionalNavBar />
         <Routes>
-          <Route path="/" element={<ProtectedRoute><RoleRouter /></ProtectedRoute>} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<AuthLanding />} />
+          <Route path="/signin" element={<SignIn />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard/farmer" element={<ProtectedRoute roles={["farmer"]}><FarmerLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="home" replace />} />
@@ -553,17 +234,10 @@ function App() {
 
 function ConditionalNavBar() {
   const location = useLocation()
-  const isAuth = location.pathname === '/login' || location.pathname === '/register'
+  const isAuth = location.pathname === '/signin' || location.pathname === '/register'
   const isDash = location.pathname.startsWith('/dashboard')
   if (isAuth || isDash) return null
   return <NavBar />
-}
-
-function RoleRouter() {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  const dest = user.role === 'lender' ? '/dashboard/lender' : user.role === 'cold_storage_owner' ? '/dashboard/cold-storage' : '/dashboard/farmer'
-  return <Navigate to={dest} replace />
 }
 
 export default App
