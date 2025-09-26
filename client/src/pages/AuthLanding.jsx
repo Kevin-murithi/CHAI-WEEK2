@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import ClimaScoreLogo from '../components/ClimaScoreLogo.jsx'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/Card'
 import { Button } from '@/components/ui/button'
 import { SparklesIcon, BanknotesIcon, BuildingStorefrontIcon } from '@heroicons/react/24/solid'
 
@@ -66,11 +66,11 @@ export default function AuthLanding() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {roles.map(({ key, title, icon: Icon, iconClass, description, bullets }) => (
+          {roles.map(({ key, title, icon: IconComp, iconClass, description, bullets }) => (
             <Card key={key} className="border border-slate-800 bg-slate-900/80 hover:bg-slate-900/70 transition-colors">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-200">
-                  <Icon className={`w-10 h-10 ${iconClass}`} />
+                  {React.createElement(IconComp, { className: `w-10 h-10 ${iconClass}` })}
                   <span className="text-xl font-semibold">{title}</span>
                 </CardTitle>
                 <CardDescription className="text-slate-300">{description}</CardDescription>

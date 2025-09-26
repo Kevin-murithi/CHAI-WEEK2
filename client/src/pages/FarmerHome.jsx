@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext.jsx'
 import GreetingHeader from '../components/home/GreetingHeader.jsx'
@@ -16,53 +16,6 @@ export default function FarmerHome() {
   const [aiSummary, setAiSummary] = useState(null)
   const [loadingAI, setLoadingAI] = useState(false)
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const [fRes, aRes] = await Promise.all([
-          fetch('http://localhost:3000/api/farmer/fields', { credentials: 'include' }),
-          fetch('http://localhost:3000/api/farmer/applications', { credentials: 'include' })
-        ])
-        const f = await fRes.json(); const a = await aRes.json()
-        setFields(f.fields || [])
-        setApps(a.applications || [])
-        
-        // Load aggregated AI summary for all fields
-        if (f.fields?.length > 0) {
-          loadAggregatedAISummary(f.fields)
-        }
-      } catch { /* ignore */ }
-    }
-    load()
-  })
-
-  async function loadAggregatedAISummary(fields) {
-    if (!fields?.length) return
-    try {
-      setLoadingAI(true)
-      
-      // Load analytics for all fields
-      const analyticsPromises = fields.map(field => 
-        fetch(`http://localhost:3000/api/ai/analytics/${field._id}?crop=maize`, { credentials: 'include' })
-          .then(res => res.ok ? res.json() : null)
-          .catch(() => null)
-      )
-      
-      const results = await Promise.all(analyticsPromises)
-      const validAnalytics = results.filter(r => r?.analytics).map(r => r.analytics)
-      
-      if (validAnalytics.length > 0) {
-        // Aggregate the analytics data
-        const aggregated = aggregateAnalytics(validAnalytics, fields)
-        setAiSummary(aggregated)
-      }
-    } catch (e) {
-      console.error('Failed to load aggregated AI summary:', e)
-    } finally {
-      setLoadingAI(false)
-    }
-  }
-  
   function aggregateAnalytics(analyticsArray, fields) {
     const totalFields = fields.length
     const analyzedFields = analyticsArray.length
@@ -140,9 +93,49 @@ export default function FarmerHome() {
         nextBestWindow: nextWindows[0] || null,
         upcomingWindows: nextWindows.slice(0, 3)
       }
-    }
-  }
+    };
+  };
 
+  const loadAggregatedAISummary = useCallback(async (fieldsToAnalyze) => {
+    if (!fieldsToAnalyze?.length) return;
+    try {
+      setLoadingAI(true);
+      
+      const analyticsPromises = fieldsToAnalyze.map(field => 
+        fetch(`http://localhost:3000/api/ai/analytics/${field._id}?crop=maize`, { credentials: 'include' })
+          .then(res => res.ok ? res.json() : null)
+          .catch(() => null)
+      );
+      
+      const results = await Promise.all(analyticsPromises);
+      const validAnalytics = results.filter(r => r?.analytics).map(r => r.analytics);
+      
+      if (validAnalytics.length > 0) {
+        const aggregated = aggregateAnalytics(validAnalytics, fieldsToAnalyze);
+        setAiSummary(aggregated);
+      }
+    } catch (e) {
+      console.error('Failed to load aggregated AI summary:', e);
+    } finally {
+      setLoadingAI(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [fRes, aRes] = await Promise.all([
+          fetch('http://localhost:3000/api/farmer/fields', { credentials: 'include' }),
+          fetch('http://localhost:3000/api/farmer/applications', { credentials: 'include' })
+        ]);
+        const f = await fRes.json(); 
+        const a = await aRes.json();
+        setFields(f.fields || []);
+        setApps(a.applications || []);
+      } catch { /* ignore */ }
+    }
+    load();
+  }, []);
 
   return (
     <div className="">
@@ -232,25 +225,25 @@ export default function FarmerHome() {
 
         {/* Sidebar (narrow column) */}
         <div className="space-y-6 border-[1.6px] border-gray-800 rounded-xl p-4 flex flex-col">
-          {aiSummary ? (
+          {loadingAI ? (
+            <AiPortfolioInsights loading={true} compact />
+          ) : aiSummary ? (
             <AiPortfolioInsights aiSummary={aiSummary} onView={() => navigate('/dashboard/farmer/advisory')} compact />
           ) : (
-            !loadingAI && (
-              <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-md bg-sky-500/20 flex items-center justify-center">
-                    <CpuChipIcon className="w-5 h-5 text-sky-300" />
-                  </div>
-                  <div className="text-slate-300 text-sm">
-                    <div className="font-medium text-slate-200 mb-0.5">AI Analysis Available</div>
-                    <div>Get personalized insights across all your fields.</div>
-                  </div>
+            <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-md bg-sky-500/20 flex items-center justify-center">
+                  <CpuChipIcon className="w-5 h-5 text-sky-300" />
                 </div>
-                <button className="mt-3 inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-sky-200 text-sm hover:bg-sky-500/15" onClick={() => loadAggregatedAISummary(fields)}>
-                  Load Portfolio Insights <ArrowRightIcon className="w-4 h-4" />
-                </button>
+                <div className="text-slate-300 text-sm">
+                  <div className="font-medium text-slate-200 mb-0.5">AI Analysis Available</div>
+                  <div>Get personalized insights across all your fields.</div>
+                </div>
               </div>
-            )
+              <button className="mt-3 inline-flex items-center gap-1 rounded-md border border-sky-500/30 bg-sky-500/10 px-3 py-1.5 text-sky-200 text-sm hover:bg-sky-500/15" onClick={() => loadAggregatedAISummary(fields)}>
+                Load Portfolio Insights <ArrowRightIcon className="w-4 h-4" />
+              </button>
+            </div>
           )}
 
           <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
@@ -273,5 +266,5 @@ export default function FarmerHome() {
         </div>
       </div>
     </div>
-  )
+  );
 }

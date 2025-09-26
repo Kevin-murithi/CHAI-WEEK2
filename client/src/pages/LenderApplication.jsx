@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Tabs from '../components/ui/Tabs.jsx'
-import Card from '../components/ui/Card.jsx'
+import { Card } from '@/components/ui/Card'
 
 export default function LenderApplication() {
   const [activeTab, setActiveTab] = useState('overview')

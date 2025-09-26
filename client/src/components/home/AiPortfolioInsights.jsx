@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import AiLoadingState from './AiLoadingState';
 import {
   SparklesIcon,
   ArrowRightIcon,
@@ -46,8 +47,14 @@ function MetricCard({ tone = 'blue', icon, label, value, unit, status }) {
   )
 }
 
-export default function AiPortfolioInsights({ aiSummary, onView, compact = false }) {
-  if (!aiSummary) return null
+export default function AiPortfolioInsights({ aiSummary, onView, compact = false, loading = false }) {
+    if (loading) {
+    return <AiLoadingState />;
+  }
+
+  if (!aiSummary) {
+    return null;
+  }
   return (
     <div className={`relative overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/70 ${compact ? 'p-3' : 'p-4'}`}>
       <div className="absolute inset-0 pointer-events-none opacity-70 [background:radial-gradient(900px_300px_at_0%_-10%,rgba(56,189,248,0.12),transparent),radial-gradient(900px_300px_at_120%_10%,rgba(59,130,246,0.1),transparent),radial-gradient(900px_300px_at_0%_110%,rgba(34,197,94,0.08),transparent)]" />
