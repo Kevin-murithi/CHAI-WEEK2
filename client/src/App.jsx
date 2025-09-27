@@ -17,6 +17,7 @@ import ColdStorageDashboard from './pages/ColdStorageDashboard.jsx'
 import AuthLanding from './pages/AuthLanding.jsx'
 import SignIn from './pages/SignIn.jsx'
 import Register from './pages/Register.jsx'
+import PostHarvest from './pages/PostHarvest.jsx'
 
 function ProtectedRoute({ children, roles }) {
   const { user, loading } = useAuth()
@@ -88,6 +89,7 @@ function Icon({ name, className }) {
     case 'application': return (<svg {...props} viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg>)
     case 'portfolio': return (<svg {...props} viewBox="0 0 24 24"><path d="M4 7h16v12H4z"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>)
     case 'admin': return (<svg {...props} viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06A2 2 0 1 1 7.04 3.3l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c0 .69.41 1.3 1.02 1.58.62.29.98.92.98 1.61s-.36 1.32-.98 1.61A1.99 1.99 0 0 0 19.4 15z"/></svg>)
+    case 'postharvest': return (<svg {...props} viewBox="0 0 24 24"><path d="M3 12h18M6 6h12M6 18h12" /><circle cx="12" cy="12" r="3" /></svg>);
     default: return null
   }
 }
@@ -148,6 +150,7 @@ function FarmerLayout() {
     { to: '/dashboard/farmer/applications', label: 'My Applications', icon: 'application' },
     { to: '/dashboard/farmer/advisory', label: 'Advisory Feed', icon: 'advisory' },
     { to: '/dashboard/farmer/resources', label: 'Resources & Learning', icon: 'resources' },
+    { to: '/dashboard/farmer/post-harvest', label: 'Post Harvest Support', icon: 'postharvest' }
   ]
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
@@ -212,6 +215,7 @@ function App() {
             <Route path="applications" element={<FarmerApplications />} />
             <Route path="advisory" element={<FarmerAdvisory />} />
             <Route path="resources" element={<FarmerResources />} />
+            <Route path="post-harvest" element={<PostHarvest />} />
           </Route>
           <Route path="/dashboard/lender" element={<ProtectedRoute roles={["lender"]}><LenderLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="overview" replace />} />
