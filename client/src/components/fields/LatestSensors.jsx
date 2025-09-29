@@ -3,7 +3,12 @@ import PropTypes from 'prop-types'
 export default function LatestSensors({ readings }) {
   if (!readings) return null
   return (
-    <div className="card" style={{marginBottom: 16}}>
+    <div className="card" style={{
+      marginBottom: 16,
+      backgroundColor: 'rgba(16, 24, 40, 0.6)',
+      border: '1px solid rgba(31, 42, 68, 0.5)',
+      color: '#e7ecf6'
+    }}>
       <div className="card-header"><h4>Latest Sensors</h4></div>
       {!readings.length && <div className="muted small">No readings yet.</div>}
       {readings.map((r, idx) => (

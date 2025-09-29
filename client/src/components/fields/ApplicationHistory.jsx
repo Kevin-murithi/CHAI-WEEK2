@@ -6,7 +6,11 @@ export default function ApplicationHistory({ applications }) {
 
   return (
     <div className="application-history" style={{marginBottom: 16}}>
-      <div className="card">
+      <div className="card" style={{
+        backgroundColor: 'rgba(16, 24, 40, 0.6)',
+        border: '1px solid rgba(31, 42, 68, 0.5)',
+        color: '#e7ecf6'
+      }}>
         <div className="card-header">
           <h4>Application History</h4>
           <span className="muted small">{applications.length} application(s)</span>

@@ -10,7 +10,11 @@ function scoreToColor(score) {
 export default function FieldInfoCard({ field }) {
   if (!field) return null
   return (
-    <div className="card">
+    <div className="card" style={{
+      backgroundColor: 'rgba(16, 24, 40, 0.6)',
+      border: '1px solid rgba(31, 42, 68, 0.5)',
+      color: '#e7ecf6'
+    }}>
       <div className="card-header"><h4>Field Information</h4></div>
       <div><strong>Name:</strong> {field.name}</div>
       <div><strong>Area:</strong> {field.areaHa?.toFixed?.(2)} ha</div>

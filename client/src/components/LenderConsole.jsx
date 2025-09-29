@@ -90,17 +90,46 @@ export default function LenderConsole() {
   const denied = apps.filter(a => a.status==='denied').length
 
   return (
-    <div className="card">
+    <div className="card" style={{
+      backgroundColor: 'rgba(16, 24, 40, 0.95)',
+      border: '1px solid rgba(31, 42, 68, 0.8)',
+      color: '#e7ecf6'
+    }}>
       <div className="card-header"><h3>Portfolio Overview</h3></div>
       {error && <div className="error">{error}</div>}
       <div className="row">
-        <div className="card sub" style={{minWidth:180}}><div>Total</div><div style={{fontSize:24, fontWeight:700}}>{total}</div></div>
-        <div className="card sub" style={{minWidth:180}}><div>Pending</div><div style={{fontSize:24, fontWeight:700}}>{pending}</div></div>
-        <div className="card sub" style={{minWidth:180}}><div>Approved</div><div style={{fontSize:24, fontWeight:700}}>{approved}</div></div>
-        <div className="card sub" style={{minWidth:180}}><div>Denied</div><div style={{fontSize:24, fontWeight:700}}>{denied}</div></div>
+        <div className="card sub" style={{
+          minWidth:180,
+          backgroundColor: 'rgba(16, 24, 40, 0.6)',
+          border: '1px solid rgba(31, 42, 68, 0.5)',
+          color: '#e7ecf6'
+        }}><div>Total</div><div style={{fontSize:24, fontWeight:700}}>{total}</div></div>
+        <div className="card sub" style={{
+          minWidth:180,
+          backgroundColor: 'rgba(16, 24, 40, 0.6)',
+          border: '1px solid rgba(31, 42, 68, 0.5)',
+          color: '#e7ecf6'
+        }}><div>Pending</div><div style={{fontSize:24, fontWeight:700}}>{pending}</div></div>
+        <div className="card sub" style={{
+          minWidth:180,
+          backgroundColor: 'rgba(16, 24, 40, 0.6)',
+          border: '1px solid rgba(31, 42, 68, 0.5)',
+          color: '#e7ecf6'
+        }}><div>Approved</div><div style={{fontSize:24, fontWeight:700}}>{approved}</div></div>
+        <div className="card sub" style={{
+          minWidth:180,
+          backgroundColor: 'rgba(16, 24, 40, 0.6)',
+          border: '1px solid rgba(31, 42, 68, 0.5)',
+          color: '#e7ecf6'
+        }}><div>Denied</div><div style={{fontSize:24, fontWeight:700}}>{denied}</div></div>
       </div>
 
-      <div className="card" style={{marginTop:12}}>
+      <div className="card" style={{
+        marginTop:12,
+        backgroundColor: 'rgba(16, 24, 40, 0.6)',
+        border: '1px solid rgba(31, 42, 68, 0.5)',
+        color: '#e7ecf6'
+      }}>
         <div className="row" style={{justifyContent:'space-between'}}>
           <div className="row">
             <div className="col"><label>Status</label>
@@ -246,7 +275,12 @@ export default function LenderConsole() {
             <>
               <div className="muted small">Farmer: {selected.farmer?.firstName} {selected.farmer?.lastName}</div>
               <div className="muted small">Field: {selected.field?.name} • Crop: {selected.crop} • Requested: ${selected.requestedAmount}</div>
-              <div className="card sub" style={{marginTop:8}}>
+              <div className="card sub" style={{
+                marginTop:8,
+                backgroundColor: 'rgba(16, 24, 40, 0.6)',
+                border: '1px solid rgba(31, 42, 68, 0.5)',
+                color: '#e7ecf6'
+              }}>
                 <div>ClimaScore: <strong>{selected.climascoreSnapshot?.climascore}</strong></div>
                 <div className="row">
                   <div className="pill low">Drought: {selected.climascoreSnapshot?.risk_breakdown?.drought_risk}</div>
@@ -254,7 +288,12 @@ export default function LenderConsole() {
                   <div className="pill low">Heat: {selected.climascoreSnapshot?.risk_breakdown?.heat_stress_risk}</div>
                 </div>
               </div>
-              <div className="card sub" style={{marginTop:8}}>
+              <div className="card sub" style={{
+                marginTop:8,
+                backgroundColor: 'rgba(16, 24, 40, 0.6)',
+                border: '1px solid rgba(31, 42, 68, 0.5)',
+                color: '#e7ecf6'
+              }}>
                 <div className="card-header"><h4>IoT Sensors (latest)</h4></div>
                 {(!sensors || !sensors.length) && <div className="muted small">No sensor readings available.</div>}
                 {sensors && sensors.map((r, idx) => (
