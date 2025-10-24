@@ -4,16 +4,41 @@ import { cn } from "@/lib/utils"
 
 function Card({
   className,
+  title,
+  subtitle,
+  headerRight,
+  children,
   ...props
 }) {
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        "rounded-2xl overflow-hidden bg-slate-900/70 text-slate-200 backdrop-blur-md shadow-2xl ring-1 ring-white/5 hover:ring-white/10 transition",
         className
       )}
-      {...props} />
+      {...props}
+    >
+      {(title || subtitle || headerRight) && (
+        <div className={cn("px-6 py-4 flex items-start justify-between gap-3")}> 
+          <div>
+            {title && (
+              <div className={cn("leading-none font-semibold text-slate-200 flex items-center gap-2")}>{title}</div>
+            )}
+            {subtitle && (
+              <div className={cn("text-slate-400 text-sm mt-1")}>{subtitle}</div>
+            )}
+          </div>
+          {headerRight && (
+            <div className="shrink-0">{headerRight}</div>
+          )}
+        </div>
+      )}
+
+      <div className="px-6 py-4">
+        {children}
+      </div>
+    </div>
   );
 }
 
@@ -99,3 +124,5 @@ export {
   CardDescription,
   CardContent,
 }
+
+export default Card

@@ -11,17 +11,17 @@ export default function SoilAnalysis({ data }) {
       {/* Core Properties */}
       <h4 className="text-slate-300 font-medium mb-2">Core Properties</h4>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+        <div className="group rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm p-4">
           <div className="text-slate-400 text-sm">Soil Health</div>
           <div className={`text-2xl font-semibold ${scoreColor(data.overallHealth)}`}>{data.overallHealth}/100</div>
           <div className="text-slate-400 text-xs">Overall score</div>
         </div>
-        <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+        <div className="group rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm p-4">
           <div className="text-slate-400 text-sm">pH Level</div>
           <div className="text-2xl font-semibold text-slate-200">{data.ph}</div>
           <div className="text-slate-400 text-xs">Temp: {data.temperature}°C</div>
         </div>
-        <div className="rounded-lg border border-slate-800 bg-slate-900/50 p-4">
+        <div className="group rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm p-4">
           <div className="text-slate-400 text-sm">Organic Matter</div>
           <div className="text-2xl font-semibold text-slate-200">{data.organicMatter}%</div>
           <div className="text-slate-400 text-xs">Drainage: {data.drainage}</div>
@@ -29,11 +29,11 @@ export default function SoilAnalysis({ data }) {
       </div>
 
       <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+        <section className="rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/60 to-slate-800/40 backdrop-blur-sm p-4">
           <h4 className="text-slate-300 font-medium mb-2 inline-flex items-center gap-2"><LeafIcon /> <span>Nutrient Levels</span></h4>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Nitrogen */}
-            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-800/50 bg-slate-900/60 p-3">
               <div className="flex items-center justify-between">
                 <div className="text-slate-200 text-sm font-semibold">Nitrogen (N)</div>
                 <div className={`text-xs ${data.nutrients?.nitrogen > 50 ? 'text-emerald-400' : 'text-amber-400'}`}>{data.nutrients?.nitrogen || 0}%</div>
@@ -43,7 +43,7 @@ export default function SoilAnalysis({ data }) {
               </div>
             </div>
             {/* Phosphorus */}
-            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-800/50 bg-slate-900/60 p-3">
               <div className="flex items-center justify-between">
                 <div className="text-slate-200 text-sm font-semibold">Phosphorus (P)</div>
                 <div className={`text-xs ${data.nutrients?.phosphorus > 30 ? 'text-emerald-400' : 'text-amber-400'}`}>{data.nutrients?.phosphorus || 0}%</div>
@@ -53,7 +53,7 @@ export default function SoilAnalysis({ data }) {
               </div>
             </div>
             {/* Potassium */}
-            <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+            <div className="rounded-xl border border-slate-800/50 bg-slate-900/60 p-3">
               <div className="flex items-center justify-between">
                 <div className="text-slate-200 text-sm font-semibold">Potassium (K)</div>
                 <div className={`text-xs ${data.nutrients?.potassium > 40 ? 'text-emerald-400' : 'text-amber-400'}`}>{data.nutrients?.potassium || 0}%</div>
@@ -66,7 +66,7 @@ export default function SoilAnalysis({ data }) {
         </section>
 
         {data.recommendations?.length > 0 && (
-          <section className="rounded-xl border border-slate-800 bg-slate-900/40 p-4">
+          <section className="rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/60 to-slate-800/40 backdrop-blur-sm p-4">
             <h4 className="text-slate-300 font-medium mb-2 inline-flex items-center gap-2"><LeafIcon /> <span>Soil Improvement Tips</span></h4>
             <ul className="list-disc list-inside space-y-1 text-slate-300 text-sm">
               {data.recommendations.map((tip, idx) => (

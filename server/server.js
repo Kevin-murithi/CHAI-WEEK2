@@ -7,6 +7,7 @@ const farmerRoutes = require('./routes/farmerRoutes')
 const lenderRoutes = require('./routes/lenderRoutes')
 const sensorRoutes = require('./routes/sensorRoutes')
 const aiRoutes = require('./routes/ai')
+const chatbotRoutes = require('./routes/chatbotRoutes')
 const { connectDB } = require('./config/db.js');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
@@ -31,6 +32,8 @@ connectDB();
 app.use(authRoutes);
 // AI routes (some endpoints don't require auth)
 app.use('/api/ai', aiRoutes);
+// Chatbot routes (no auth required for testing)
+app.use('/api/chatbot', chatbotRoutes);
 // Require a valid session for ClimaScore and any future protected routes
 app.use(requireRole());
 app.use(climaRoutes);

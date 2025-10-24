@@ -40,7 +40,7 @@ export default function AIRecommendations({ advisory, loading, onRefresh }) {
         <button
           onClick={onRefresh}
           disabled={loading}
-          className={`inline-flex items-center gap-2 rounded-md bg-blue-600 text-white px-3 py-1.5 text-sm transition hover:bg-blue-500 disabled:opacity-60`}
+          className={`inline-flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 py-1.5 text-sm transition-all hover:from-blue-500 hover:to-blue-600 disabled:opacity-60 shadow-sm hover:shadow-blue-500/20`}
         >
           {loading ? 'Refreshing…' : 'Refresh Insights'}
         </button>
@@ -50,14 +50,15 @@ export default function AIRecommendations({ advisory, loading, onRefresh }) {
       {advisory?.recommendations?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {advisory.recommendations.map(rec => (
-            <div key={rec.id} className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
-              <div className="flex items-start gap-3">
+            <div key={rec.id} className="group rounded-xl border border-slate-800/50 bg-gradient-to-br from-slate-900/70 to-slate-800/50 backdrop-blur-sm p-4 hover:border-slate-700/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-300"></div>
+              <div className="relative z-10 flex items-start gap-3">
                 <div className="leading-none text-slate-300">{typeIcon(rec.type)}</div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">
                     <div className="text-slate-200 font-semibold text-sm flex items-center gap-2">
                       <span>{rec.title}</span>
-                      <span className={`inline-flex text-white text-xs px-2 py-0.5 rounded ${priorityBg(rec.priority)}`}>{rec.priority}</span>
+                      <span className={`inline-flex text-white text-xs px-2 py-0.5 rounded-full ${priorityBg(rec.priority)} shadow-sm`}>{rec.priority}</span>
                     </div>
                     {rec.confidence && (
                       <div className="text-slate-400 text-xs">{Math.round(rec.confidence * 100)}% confidence</div>
@@ -65,7 +66,7 @@ export default function AIRecommendations({ advisory, loading, onRefresh }) {
                   </div>
                   <div className="text-slate-400 text-sm mt-1">{rec.description}</div>
                   {rec.actionItems?.length > 0 && (
-                    <div className="mt-2">
+                    <div className="mt-3">
                       <div className="text-slate-300 text-xs font-semibold">Action Items:</div>
                       <ul className="list-disc list-inside text-slate-300 text-sm space-y-0.5">
                         {rec.actionItems.map((item, idx) => (

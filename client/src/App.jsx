@@ -34,10 +34,10 @@ function ColdStorageLayout() {
   ]
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
-      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 bg-slate-900/60 backdrop-blur-xl ring-1 ring-white/5 shadow-lg">
+        <div className="flex items-center gap-2 font-semibold">
           <ClimaScoreLogo />
-          <span>Cold Storage</span>
+          <span className="bg-gradient-to-r from-emerald-300 via-blue-300 to-sky-300 bg-clip-text text-transparent tracking-wide">Cold Storage</span>
         </div>
       </header>
       <Sidebar items={items} title="Cold Storage" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
@@ -155,14 +155,14 @@ function FarmerLayout() {
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
       {/* Header */}
-      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 bg-slate-900/60 backdrop-blur-xl ring-1 ring-white/5 shadow-lg">
+        <div className="flex items-center gap-2 font-semibold">
           <ClimaScoreLogo />
-          <span>Grow Portal</span>
+          <span className="bg-gradient-to-r from-emerald-300 via-blue-300 to-sky-300 bg-clip-text text-transparent tracking-wide">shamba shape up</span>
         </div>
       </header>
       {/* Sidebar */}
-      <Sidebar items={items} title="Grow Portal" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
+      <Sidebar items={items} title="shamba shape up" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />
       {/* Main content */}
       <main className={`pt-14 ${collapsed ? 'ml-16' : ''}`}>
         <div className="p-4">
@@ -184,10 +184,10 @@ function LenderLayout() {
   ]
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">
-      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/80 backdrop-blur">
-        <div className="flex items-center gap-2 text-slate-200 font-semibold">
+      <header className="fixed top-0 inset-x-0 h-14 z-40 flex items-center justify-between px-4 bg-slate-900/60 backdrop-blur-xl ring-1 ring-white/5 shadow-lg">
+        <div className="flex items-center gap-2 font-semibold">
           <ClimaScoreLogo />
-          <span>Risk Console</span>
+          <span className="bg-gradient-to-r from-emerald-300 via-blue-300 to-sky-300 bg-clip-text text-transparent tracking-wide">Risk Console</span>
         </div>
       </header>
       <Sidebar items={items} title="Risk Console" collapsed={collapsed} onToggle={()=>setCollapsed(v=>!v)} />

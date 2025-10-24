@@ -1,13 +1,10 @@
 const { computeClimaScore } = require('./climateService');
-const OpenAI = require('openai');
+const gemini = require('./geminiService');
 
 // Pure AI service using OpenRouter API - no hardcoded logic or rules
 class AIService {
   constructor() {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: "https://openrouter.ai/api/v1"
-    });
+    // Uses Gemini via geminiService with GEMINI_API_KEY
     this.cache = new Map(); // Simple in-memory cache
     this.cacheExpiry = 30 * 60 * 1000; // 30 minutes
   }
@@ -55,7 +52,7 @@ class AIService {
     try {
       const { sensorTrends, historicalPerformance, regionalData } = contextData;
 
-      // Use pure AI to enhance ClimaScore
+      // Use Gemini to enhance ClimaScore
       const prompt = `You are an expert agricultural risk analyst. Based on the following data, enhance a base ClimaScore of ${baseScore} by analyzing risk factors.
 
 Context Data:
@@ -78,24 +75,11 @@ Please provide an enhanced ClimaScore analysis in this exact JSON format:
 
 Consider how sensor data, historical performance, and regional patterns affect the risk level.`;
 
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert agricultural risk analyst. Always respond with valid JSON."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 500,
-        temperature: 0.3
-      });
+      const system = "You are an expert agricultural risk analyst. Output ONLY raw JSON. No markdown, no code fences, no commentary.";
+      const { success, response, error } = await gemini.generateResponse(prompt, system);
+      if (!success) throw new Error(error || 'Gemini call failed');
 
-      const response = completion.choices[0].message.content;
-      const result = JSON.parse(response);
+      const result = this.parseJsonSafe(response);
 
       return result;
     } catch (error) {
@@ -274,32 +258,15 @@ Please provide a complete analysis in this exact JSON format:
 
 Make all values realistic and data-driven. Consider the crop type, field conditions, and sensor data when making predictions.`;
 
-    const completion = await this.openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert agricultural AI providing comprehensive field analytics. Always respond with valid JSON containing realistic, data-driven predictions."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.7
-    });
-
-    const response = completion.choices[0].message.content;
-
-    try {
-      const analytics = JSON.parse(response);
-      return analytics;
-    } catch (parseError) {
-      console.error('Failed to parse AI analytics response:', parseError);
-      console.log('Raw response:', response);
+    const system = "You are an expert agricultural AI providing comprehensive field analytics. Output ONLY raw JSON with realistic, data-driven predictions. No markdown or code fences.";
+    const { success, response, error } = await gemini.generateResponse(prompt, system);
+    if (!success) {
+      console.error('Gemini analytics error:', error);
       return this.getFallbackAnalytics();
     }
+
+    const analytics = this.parseJsonSafe(response);
+    return analytics || this.getFallbackAnalytics();
   }
 
   // Real AI-powered recommendations using OpenAI
@@ -307,7 +274,7 @@ Make all values realistic and data-driven. Consider the crop type, field conditi
     try {
       const { fields, sensors, weather, applications } = farmerData;
 
-      // Prepare context data for OpenAI
+      // Prepare context data
       const fieldSummary = fields?.map(field => ({
         name: field.name,
         area: field.areaHa,
@@ -351,24 +318,11 @@ Please provide recommendations in this exact JSON format:
 
 Make recommendations specific to the data provided and prioritize based on potential impact.`;
 
-      const completion = await this.openai.chat.completions.create({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert agricultural consultant providing data-driven farming recommendations. Always respond with valid JSON."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7
-      });
+      const system = "You are an expert agricultural consultant providing data-driven farming recommendations. Output ONLY raw JSON. No markdown or code fences.";
+      const { success, response, error } = await gemini.generateResponse(prompt, system);
+      if (!success) throw new Error(error || 'Gemini call failed');
 
-      const response = completion.choices[0].message.content;
-      const recommendations = JSON.parse(response);
+      const recommendations = this.parseJsonSafe(response) || [];
 
       // Add fieldId to each recommendation
       const enhancedRecommendations = recommendations.map(rec => ({
@@ -379,7 +333,7 @@ Make recommendations specific to the data provided and prioritize based on poten
       return enhancedRecommendations;
 
     } catch (error) {
-      console.error('OpenAI API call failed:', error);
+      console.error('Gemini recommendations failed:', error);
       return this.getFallbackRecommendations();
     }
   }
@@ -422,6 +376,84 @@ Make recommendations specific to the data provided and prioritize based on poten
       generatedAt: new Date(),
       confidence: 0.3
     };
+  }
+
+  // Attempt to parse strict JSON, with a fallback that extracts the first JSON object/array block
+  parseJsonSafe(text) {
+    if (!text) return null;
+    try {
+      let input = String(text).trim();
+      // Strip markdown code fences like ```json ... ``` or ``` ... ```
+      const fenceStart = input.indexOf('```');
+      const fenceEnd = input.lastIndexOf('```');
+      if (fenceStart !== -1 && fenceEnd !== -1 && fenceEnd > fenceStart + 2) {
+        let fenced = input.slice(fenceStart + 3, fenceEnd).trim();
+        if (/^(json|JSON|javascript|js)/.test(fenced)) {
+          const nl = fenced.indexOf('\n');
+          fenced = nl !== -1 ? fenced.slice(nl + 1) : '';
+        }
+        input = fenced.trim();
+      }
+
+      // Try strict parse first
+      try {
+        return JSON.parse(input);
+      } catch (_) {}
+
+      // Clean trailing commas and try again
+      try {
+        const cleaned = input.replace(/,(\s*[}\]])/g, '$1');
+        if (cleaned !== input) console.debug('Applied trailing comma cleanup before JSON.parse');
+        return JSON.parse(cleaned);
+      } catch (_) {}
+
+      // Fallback: extract first JSON object/array slice and parse
+      const startObj = input.indexOf('{');
+      const startArr = input.indexOf('[');
+      const start = (startObj === -1) ? startArr : (startArr === -1 ? startObj : Math.min(startObj, startArr));
+      const endObj = input.lastIndexOf('}');
+      const endArr = input.lastIndexOf(']');
+      const end = Math.max(endObj, endArr);
+      if (start >= 0 && end > start) {
+        let slice = input.slice(start, end + 1);
+        // Clean slice: remove trailing commas
+        let cleanedSlice = slice.replace(/,(\s*[}\]])/g, '$1');
+        if (cleanedSlice !== slice) console.debug('Applied trailing comma cleanup to slice before JSON.parse');
+        // Balance braces/brackets if unbalanced
+        const opens = (cleanedSlice.match(/[\[{]/g) || []).length;
+        const closes = (cleanedSlice.match(/[\]}]/g) || []).length;
+        let balanced = cleanedSlice;
+        if (opens > closes) {
+          const diff = opens - closes;
+          const lastOpen = cleanedSlice.lastIndexOf('{') > cleanedSlice.lastIndexOf('[') ? '}' : ']';
+          balanced = cleanedSlice + lastOpen.repeat(diff);
+          console.debug('Appended closing braces/brackets to balance JSON slice:', { diff, lastOpen });
+        }
+        console.debug('Attempting JSON parse from slice indices', {
+          start,
+          end,
+          sliceLength: end - start + 1,
+          sliceHead: balanced.slice(0, 200),
+          sliceTail: balanced.slice(-200)
+        });
+        return JSON.parse(balanced);
+      }
+
+      // Log diagnostics if still failing
+      const len = typeof input === 'string' ? input.length : 0;
+      console.error('Primary JSON parse failed. Response diagnostics:', {
+        length: len,
+        head: (input || '').slice(0, 300),
+        tail: (input || '').slice(-300)
+      });
+      return null;
+    } catch (e) {
+      console.error('Failed to extract JSON from Gemini response', {
+        message: e?.message,
+        stack: e?.stack
+      });
+      return null;
+    }
   }
 }
 
