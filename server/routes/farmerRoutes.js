@@ -11,6 +11,8 @@ router.use(requireRole(['farmer']));
 router.post('/fields', farmer.createField);
 router.get('/fields', farmer.listFields);
 router.get('/fields/:id', farmer.getField);
+router.post('/fields/resolve-lr', farmer.resolveParcelPreview);
+router.post('/fields/from-lr', farmer.createFieldFromParcel);
 
 // Applications
 router.post('/applications', farmer.createApplication);

@@ -2,6 +2,7 @@ const Field = require('../models/Field');
 const Application = require('../models/Application');
 const mongoose = require('mongoose');
 const { computeClimaScore } = require('../services/climateService');
+const { resolveParcel } = require('../services/parcelResolver');
 
 function polygonCentroid(polygon) {
   // polygon.coordinates: [ [ [lng,lat], ... ] ] first ring only
@@ -107,6 +108,61 @@ module.exports.getField = async (req, res) => {
     res.json({ field });
   } catch (e) {
     res.status(500).json({ error: 'Failed to get field' });
+  }
+};
+
+module.exports.resolveParcelPreview = async (req, res) => {
+  try {
+    const { number, county, registryMapSheet } = req.body || {};
+    if (!number) return res.status(400).json({ error: 'number is required' });
+    const result = await resolveParcel({ number, county, registryMapSheet });
+    const suggestedName = `Parcel ${result.attributes.number}`;
+    res.json({ preview: { geometry: result.geometry, suggestedName, parcelMeta: result.attributes } });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to resolve parcel' });
+  }
+};
+
+module.exports.createFieldFromParcel = async (req, res) => {
+  try {
+    const { number, county, registryMapSheet, name, acreageDeclared } = req.body || {};
+    if (!number) return res.status(400).json({ error: 'number is required' });
+    const result = await resolveParcel({ number, county, registryMapSheet });
+    const geometry = result.geometry;
+    if (!geometry || geometry.type !== 'Polygon') return res.status(400).json({ error: 'Resolved geometry invalid' });
+    const areaHa = approximateAreaHa(geometry);
+    const field = await Field.create({
+      owner: req.user.id,
+      name: name || `Parcel ${result.attributes.number}`,
+      geometry,
+      areaHa,
+      metadata: {},
+      parcel: {
+        number: result.attributes.number || '',
+        registryMapSheet: result.attributes.registryMapSheet || '',
+        county: result.attributes.county || '',
+        acreageDeclared: typeof acreageDeclared === 'number' ? acreageDeclared : null,
+        acreageFromCadastre: typeof result.attributes.acreageFromCadastre === 'number' ? result.attributes.acreageFromCadastre : null,
+      },
+      verification: {
+        status: 'verified',
+        source: result.attributes.source || 'unknown',
+        checkedAt: new Date(),
+      }
+    });
+
+    try {
+      const ctr = polygonCentroid(geometry);
+      if (ctr) {
+        const snapshot = await computeClimaScore({ lat: ctr.lat, lon: ctr.lon, crop: 'maize', planting_date: null, source: 'nasa' });
+        await Field.updateOne({ _id: field._id }, { $set: { latestClimaScore: snapshot.climascore, latestRiskBreakdown: snapshot.risk_breakdown } });
+        const updated = await Field.findById(field._id);
+        return res.status(201).json({ field: updated });
+      }
+    } catch {}
+    res.status(201).json({ field });
+  } catch (e) {
+    res.status(500).json({ error: 'Failed to create field from parcel' });
   }
 };
 

@@ -221,6 +221,19 @@ async function computeClimaScore({ lat, lon, crop, planting_date, source }) {
 
     const { climascore, recommended_loan_terms } = scoreAndRecommendation({ droughtRiskScore, floodRiskScore, heatRiskScore, crop });
 
+    try {
+      console.log('SAT_DATA', {
+        source: data_sources_used[0] || 'unknown',
+        lat: Number(lat.toFixed ? lat.toFixed(4) : lat),
+        lon: Number(lon.toFixed ? lon.toFixed(4) : lon),
+        days: debug?.days_count ?? (daily?.time?.length || 0),
+        total30_precip_mm: debug?.total30_precip_mm,
+        heavy_rain_days_30mm: debug?.heavy_rain_days_30mm,
+        heat_stress_days_gt34c: debug?.heat_stress_days_gt34c,
+        climascore
+      });
+    } catch {}
+
     const result = { climascore, risk_breakdown, recommended_loan_terms, data_sources_used, debug };
     _setCache(cacheKey, result);
     return result;
@@ -327,6 +340,14 @@ async function compareClimaScores({ lat, lon, crop, planting_date }) {
     suggested_sources,
     rationale
   };
+  try {
+    console.log('SAT_DATA_COMPARE', {
+      lat: Number(lat.toFixed ? lat.toFixed(4) : lat),
+      lon: Number(lon.toFixed ? lon.toFixed(4) : lon),
+      period: { start: startISO, end: endISO },
+      sources: results.map(r => ({ source: r.source, climascore: r.climascore, total30_precip_mm: r?.debug?.total30_precip_mm, error: r.error || undefined }))
+    });
+  } catch {}
   _setCache(cacheKey, payload);
   return payload;
 }

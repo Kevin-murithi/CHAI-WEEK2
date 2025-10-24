@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import { MapContainer, TileLayer, GeoJSON, Marker, Popup, useMap } from 'react-leaflet';
+import { useAuth } from '../context/AuthContext.jsx';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.js';
 import 'leaflet-draw/dist/leaflet.draw.css';
@@ -60,9 +61,13 @@ const API_BASE_URL = window.REACT_APP_API_URL || 'http://localhost:3000';
 
 FarmerMap.propTypes = {
   onFieldsChanged: PropTypes.func,
+  previewGeometry: PropTypes.object,
+  previewMeta: PropTypes.object,
+  reloadKey: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
 };
 
-export default function FarmerMap({ onFieldsChanged }) {
+export default function FarmerMap({ onFieldsChanged, previewGeometry, previewMeta, reloadKey }) {
+  const { user } = useAuth();
   const [fields, setFields] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -118,6 +123,13 @@ export default function FarmerMap({ onFieldsChanged }) {
     };
   }, [loadFields]);
 
+  // Allow parent to trigger reloads (e.g., after creating field from LR)
+  useEffect(() => {
+    if (reloadKey != null) {
+      loadFields();
+    }
+  }, [reloadKey, loadFields]);
+
   function getFieldCenter(field) {
     try {
       const coords = field?.geometry?.coordinates?.[0] || []
@@ -133,12 +145,61 @@ export default function FarmerMap({ onFieldsChanged }) {
     }
   }
 
+  function getGeometryCenter(geometry) {
+    try {
+      const coords = geometry?.coordinates?.[0] || []
+      if (!coords.length) return [-0.1, 37.6]
+      const lats = coords.map(c => c[1])
+      const lngs = coords.map(c => c[0])
+      return [
+        (Math.min(...lats) + Math.max(...lats)) / 2,
+        (Math.min(...lngs) + Math.max(...lngs)) / 2,
+      ]
+    } catch { return [-0.1, 37.6] }
+  }
+
+  function approximateAreaHaLocal(geometry) {
+    try {
+      const ring = geometry?.coordinates?.[0] || []
+      if (ring.length < 3) return 0
+      const R = 6371000
+      const toRad = (d) => d * Math.PI / 180
+      const lats = ring.map(p => p[1])
+      const lat0 = (Math.min(...lats) + Math.max(...lats)) / 2
+      const kx = Math.cos(toRad(lat0)) * (Math.PI/180) * R
+      const ky = (Math.PI/180) * R
+      let area2 = 0
+      for (let i=0; i<ring.length-1; i++) {
+        const [x1d,y1d] = ring[i]
+        const [x2d,y2d] = ring[i+1]
+        const x1 = x1d * kx, y1 = y1d * ky
+        const x2 = x2d * kx, y2 = y2d * ky
+        area2 += (x1*y2 - x2*y1)
+      }
+      const areaM2 = Math.abs(area2)/2
+      return areaM2 / 10000
+    } catch { return 0 }
+  }
+
   const handleCreated = useCallback((e) => {
     const layer = e.layer;
     const geo = layer.toGeoJSON();
     setPendingGeom(geo.geometry);
     setCreateOpen(true);
   }, []);
+
+  function FitOnPreview({ geometry }) {
+    const map = useMap();
+    useEffect(() => {
+      if (!map || !geometry) return;
+      try {
+        const layer = window.L.geoJSON(geometry);
+        const b = layer.getBounds();
+        if (b && b.isValid()) map.fitBounds(b.pad(0.2));
+      } catch {}
+    }, [map, geometry]);
+    return null;
+  }
 
   async function submitCreateField(ev) {
     ev.preventDefault();
@@ -216,6 +277,32 @@ export default function FarmerMap({ onFieldsChanged }) {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
           />
           <DrawControl onCreated={handleCreated} />
+          {previewGeometry && (
+            <GeoJSON 
+              data={previewGeometry}
+              style={{ color: '#ef4444', weight: 3, dashArray: '6 4', fillOpacity: 0.1 }}
+            />
+          )}
+          {previewGeometry && (<FitOnPreview geometry={previewGeometry} />)}
+          {previewGeometry && (
+            <Marker position={getGeometryCenter(previewGeometry)}>
+              <Popup>
+                <div style={{minWidth:200, maxWidth:260, color:'#000'}}>
+                  <div style={{fontWeight:700, marginBottom:6, fontSize:14}}>Parcel Preview</div>
+                  <div style={{display:'grid', gridTemplateColumns:'auto 1fr', gap:'6px 8px', fontSize:12}}>
+                    <div style={{opacity:0.7}}>LR/Parcel</div>
+                    <div style={{fontWeight:600}}>{previewMeta?.number || '—'}</div>
+                    <div style={{opacity:0.7}}>Area</div>
+                    <div style={{fontWeight:600}}>{approximateAreaHaLocal(previewGeometry).toFixed(3)} ha</div>
+                    <div style={{opacity:0.7}}>Location</div>
+                    <div style={{fontWeight:600}}>{previewMeta?.county || (()=>{ const [lat,lng]=getGeometryCenter(previewGeometry); return `${lat.toFixed(4)}, ${lng.toFixed(4)}` })()}</div>
+                    <div style={{opacity:0.7}}>Owner</div>
+                    <div style={{fontWeight:600}}>{user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '—' : '—'}</div>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
+          )}
           {fields.map((field) => {
             const center = getFieldCenter(field)
             return (
@@ -230,15 +317,25 @@ export default function FarmerMap({ onFieldsChanged }) {
                 />
                 <Marker position={center}>
                   <Popup>
-                    <div style={{textAlign:'center'}}>
-                      <div style={{fontWeight:600, marginBottom:4}}>{field.name || 'Field'}</div>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => window.dispatchEvent(new CustomEvent('openFieldDetails', { detail: field._id }))}
-                        style={{fontSize:'11px', padding:'4px 8px'}}
-                      >
-                        View Details
-                      </button>
+                    <div style={{minWidth:220, maxWidth:280, color:'#000'}}>
+                      <div style={{fontWeight:700, marginBottom:6, fontSize:14}}>{field.name || 'Field'}</div>
+                      <div style={{display:'grid', gridTemplateColumns:'auto 1fr', gap:'6px 8px', fontSize:12, marginBottom:8}}>
+                        <div style={{opacity:0.7}}>Area</div>
+                        <div style={{fontWeight:600}}>{approximateAreaHaLocal(field.geometry).toFixed(3)} ha</div>
+                        <div style={{opacity:0.7}}>Location</div>
+                        <div style={{fontWeight:600}}>{field.parcel?.county || (()=>{ const [lat,lng]=getFieldCenter(field); return `${lat.toFixed(4)}, ${lng.toFixed(4)}` })()}</div>
+                        <div style={{opacity:0.7}}>Score</div>
+                        <div style={{fontWeight:600}}>{field.latestClimaScore == null ? '—' : field.latestClimaScore}</div>
+                      </div>
+                      <div style={{display:'flex', justifyContent:'center'}}>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => window.dispatchEvent(new CustomEvent('openFieldDetails', { detail: field._id }))}
+                          style={{fontSize:'11px', padding:'6px 10px'}}
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
                   </Popup>
                 </Marker>
