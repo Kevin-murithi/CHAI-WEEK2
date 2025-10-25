@@ -46,7 +46,7 @@ export default function AnalyticsPanel({ analytics }) {
               <div><strong>Heavy Rain Days:</strong> {dbg.heavy_rain_days_30mm ?? '—'}</div>
             </div>
             <div>
-              <div><strong>Heat >34°C:</strong> {dbg.heat_stress_days_gt34c ?? '—'} days</div>
+              <div><strong>Heat 34°C:</strong> {dbg.heat_stress_days_gt34c ?? '—'} days</div>
               <div><strong>Days Count:</strong> {dbg.days_count ?? '—'}</div>
             </div>
           </div>
