@@ -79,7 +79,7 @@ function FarmerFields({ showMap = true }) {
 
   async function loadFieldAnalytics(fieldId) {
     try {
-      const response = await fetch(`http://localhost:3000/api/ai/field-analysis/${fieldId}`, {
+      const response = await fetch(`http://localhost:3000/api/ai/analytics/${fieldId}`, {
         credentials: 'include'
       })
       if (!response.ok) throw new Error('Failed to load field analytics')

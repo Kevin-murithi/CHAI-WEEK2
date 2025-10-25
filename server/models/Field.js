@@ -24,6 +24,18 @@ const FieldSchema = new mongoose.Schema({
     ownership: { type: String, default: '' },
     notes: { type: String, default: '' },
   },
+  parcel: {
+    number: { type: String, default: '', index: true },
+    registryMapSheet: { type: String, default: '' },
+    county: { type: String, default: '' },
+    acreageDeclared: { type: Number, default: null },
+    acreageFromCadastre: { type: Number, default: null },
+  },
+  verification: {
+    status: { type: String, enum: ['unverified', 'verified', 'mismatch'], default: 'unverified' },
+    source: { type: String, default: '' },
+    checkedAt: { type: Date, default: null },
+  },
 }, { timestamps: true });
 
 module.exports = mongoose.model('field', FieldSchema);
