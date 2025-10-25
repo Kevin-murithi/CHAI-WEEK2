@@ -178,9 +178,9 @@ function LenderLayout() {
   const items = [
     { to: '/dashboard/lender/overview', label: 'Executive Overview', icon: 'overview' },
     { to: '/dashboard/lender/queue', label: 'Loan Application Queue', icon: 'queue' },
-    { to: '/dashboard/lender/application', label: 'Application Detail', icon: 'application' },
-    { to: '/dashboard/lender/portfolio', label: 'Portfolio Management', icon: 'portfolio' },
-    { to: '/dashboard/lender/admin', label: 'Admin & Reporting', icon: 'admin' },
+    // { to: '/dashboard/lender/application', label: 'Application Detail', icon: 'application' },
+    // { to: '/dashboard/lender/portfolio', label: 'Portfolio Management', icon: 'portfolio' },
+    // { to: '/dashboard/lender/admin', label: 'Admin & Reporting', icon: 'admin' },
   ]
   return (
     <div className="min-h-screen bg-[radial-gradient(600px_300px_at_10%_-10%,rgba(59,130,246,0.15),transparent),radial-gradient(600px_300px_at_120%_10%,rgba(34,197,94,0.12),transparent),linear-gradient(180deg,rgba(14,20,34,0.9),rgba(14,20,34,0.95))]">

@@ -33,6 +33,8 @@ export default function LenderConsole() {
   const [selected, setSelected] = useState(null)
   const [action, setAction] = useState({ action: 'approve', amount: '', interestRate: '', comments: '' })
   const [sensors, setSensors] = useState([])
+  const [page, setPage] = useState(1)
+  const pageSize = 10
   
   const filtered = useMemo(() => {
     return apps.filter(a => {
@@ -47,13 +49,51 @@ export default function LenderConsole() {
     })
   }, [apps, filter])
 
+  useEffect(() => { setPage(1) }, [filter, apps])
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, page])
+
+  function StatusBadge({ status }) {
+    const map = {
+      approved: 'border-emerald-500/40 text-emerald-300 bg-emerald-500/10',
+      pending: 'border-amber-500/40 text-amber-300 bg-amber-500/10',
+      denied: 'border-rose-500/40 text-rose-300 bg-rose-500/10',
+      needs_info: 'border-sky-500/40 text-sky-300 bg-sky-500/10'
+    }
+    const cls = map[status] || 'border-slate-600 text-slate-300 bg-slate-700/30'
+    return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs border capitalize ${cls}`}>{status?.replace('_',' ')||'—'}</span>
+  }
+
+  function exportCSV() {
+    const headers = ['Farmer','Field','Crop','Score','Status','Requested']
+    const rows = filtered.map(a => [
+      `${a.farmer?.firstName||''} ${a.farmer?.lastName||''}`.trim(),
+      a.field?.name||'',
+      a.crop||'',
+      a.field?.latestClimaScore ?? '',
+      a.status||'',
+      a.requestedAmount ?? ''
+    ])
+    const csv = [headers, ...rows].map(r => r.map(v => typeof v==='string' && v.includes(',') ? `"${v}"` : v).join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'applications.csv'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
   async function openReview(app) {
     try {
       const resp = await fetch(`http://localhost:3000/api/lender/applications/${app._id}`, { credentials: 'include' })
       if (!resp.ok) throw new Error('Failed to load application')
       const data = await resp.json()
       setSelected(data.application)
-      setAction({ action: 'approve', amount: data.application?.climascoreSnapshot?.recommended_loan_terms?.amount || '', interestRate: data.application?.climascoreSnapshot?.recommended_loan_terms?.interest_rate || '', comments: '' })
+      setAction({ action: 'approve', amount: data.application?.requestedAmount || app.requestedAmount || '', interestRate: data.application?.climascoreSnapshot?.recommended_loan_terms?.interest_rate || '', comments: '' })
       // fetch sensors
       const sres = await fetch(`http://localhost:3000/api/lender/applications/${app._id}/sensors`, { credentials: 'include' })
       if (sres.ok) {
@@ -90,106 +130,96 @@ export default function LenderConsole() {
   const denied = apps.filter(a => a.status==='denied').length
 
   return (
-    <div className="card" style={{
-      backgroundColor: 'rgba(16, 24, 40, 0.95)',
-      border: '1px solid rgba(31, 42, 68, 0.8)',
-      color: '#e7ecf6'
-    }}>
-      <div className="card-header"><h3>Portfolio Overview</h3></div>
+    <div className="rounded-xl border border-slate-800 bg-slate-900/70 text-slate-200">
+      <div className="px-4 py-3 border-b border-slate-800"><h3 className="text-slate-100 text-lg font-semibold">Portfolio Overview</h3></div>
       {error && <div className="error">{error}</div>}
-      <div className="row">
-        <div className="card sub" style={{
-          minWidth:180,
-          backgroundColor: 'rgba(16, 24, 40, 0.6)',
-          border: '1px solid rgba(31, 42, 68, 0.5)',
-          color: '#e7ecf6'
-        }}><div>Total</div><div style={{fontSize:24, fontWeight:700}}>{total}</div></div>
-        <div className="card sub" style={{
-          minWidth:180,
-          backgroundColor: 'rgba(16, 24, 40, 0.6)',
-          border: '1px solid rgba(31, 42, 68, 0.5)',
-          color: '#e7ecf6'
-        }}><div>Pending</div><div style={{fontSize:24, fontWeight:700}}>{pending}</div></div>
-        <div className="card sub" style={{
-          minWidth:180,
-          backgroundColor: 'rgba(16, 24, 40, 0.6)',
-          border: '1px solid rgba(31, 42, 68, 0.5)',
-          color: '#e7ecf6'
-        }}><div>Approved</div><div style={{fontSize:24, fontWeight:700}}>{approved}</div></div>
-        <div className="card sub" style={{
-          minWidth:180,
-          backgroundColor: 'rgba(16, 24, 40, 0.6)',
-          border: '1px solid rgba(31, 42, 68, 0.5)',
-          color: '#e7ecf6'
-        }}><div>Denied</div><div style={{fontSize:24, fontWeight:700}}>{denied}</div></div>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4">
+        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4 min-w-[180px]"><div className="text-slate-400 text-[11px] uppercase tracking-wide">Total</div><div className="text-xl font-semibold">{total}</div></div>
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 min-w-[180px]"><div className="text-amber-300 text-[11px] uppercase tracking-wide">Pending</div><div className="text-xl font-semibold text-amber-100">{pending}</div></div>
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-4 min-w-[180px]"><div className="text-emerald-300 text-[11px] uppercase tracking-wide">Approved</div><div className="text-xl font-semibold text-emerald-100">{approved}</div></div>
+        <div className="rounded-xl border border-rose-500/30 bg-rose-500/10 p-4 min-w-[180px]"><div className="text-rose-300 text-[11px] uppercase tracking-wide">Denied</div><div className="text-xl font-semibold text-rose-100">{denied}</div></div>
       </div>
 
-      <div className="card" style={{
-        marginTop:12,
-        backgroundColor: 'rgba(16, 24, 40, 0.6)',
-        border: '1px solid rgba(31, 42, 68, 0.5)',
-        color: '#e7ecf6'
-      }}>
-        <div className="row" style={{justifyContent:'space-between'}}>
-          <div className="row">
-            <div className="col"><label>Status</label>
-              <select value={filter.status} onChange={e=>setFilter(prev=>({...prev, status: e.target.value}))}>
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="denied">Denied</option>
-                <option value="needs_info">Needs Info</option>
-              </select>
-            </div>
-            <div className="col"><label>Crop</label>
-              <select value={filter.crop} onChange={e=>setFilter(prev=>({...prev, crop: e.target.value}))}>
-                <option value="">All</option>
-                <option value="maize">Maize</option>
-                <option value="wheat">Wheat</option>
-                <option value="sorghum">Sorghum</option>
-              </select>
-            </div>
-            <div className="col"><label>Risk Band</label>
-              <select value={filter.band} onChange={e=>setFilter(prev=>({...prev, band: e.target.value}))}>
-                <option value="">All</option>
-                <option value="green">Green</option>
-                <option value="yellow">Yellow</option>
-                <option value="red">Red</option>
-              </select>
-            </div>
+      <div className="rounded-xl border border-slate-800 bg-slate-900/60 text-slate-200 mx-4 mb-4 sticky top-2 z-10">
+        <div className="p-3 grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+          <div>
+            <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">Status</div>
+            <select className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" value={filter.status} onChange={e=>setFilter(prev=>({...prev, status: e.target.value}))}>
+              <option value="">All</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+              <option value="needs_info">Needs Info</option>
+            </select>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">Crop</div>
+            <select className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" value={filter.crop} onChange={e=>setFilter(prev=>({...prev, crop: e.target.value}))}>
+              <option value="">All</option>
+              <option value="maize">Maize</option>
+              <option value="wheat">Wheat</option>
+              <option value="sorghum">Sorghum</option>
+            </select>
+          </div>
+          <div>
+            <div className="text-[11px] uppercase tracking-wide text-slate-400 mb-1">Risk Band</div>
+            <select className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" value={filter.band} onChange={e=>setFilter(prev=>({...prev, band: e.target.value}))}>
+              <option value="">All</option>
+              <option value="green">Green</option>
+              <option value="yellow">Yellow</option>
+              <option value="red">Red</option>
+            </select>
+          </div>
+          <div className="flex justify-end">
+            <button onClick={exportCSV} className="inline-flex items-center rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm px-3 py-2">Export CSV</button>
           </div>
         </div>
 
-        <div style={{overflowX:'auto', marginTop:12}}>
-          <table style={{width:'100%', borderCollapse:'collapse'}}>
-            <thead>
-              <tr style={{textAlign:'left'}}>
-                <th>Farmer</th>
-                <th>Field</th>
-                <th>Crop</th>
-                <th>Score</th>
-                <th>Status</th>
-                <th>Requested</th>
-                <th>Actions</th>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-slate-400">
+              <tr className="text-left">
+                <th className="px-4 py-2">Farmer</th>
+                <th className="px-4 py-2">Field</th>
+                <th className="px-4 py-2">Crop</th>
+                <th className="px-4 py-2">Score</th>
+                <th className="px-4 py-2">Status</th>
+                <th className="px-4 py-2">Requested</th>
+                <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(a => (
-                <tr key={a._id}>
-                  <td>{a.farmer?.firstName} {a.farmer?.lastName}</td>
-                  <td>{a.field?.name}</td>
-                  <td>{a.crop}</td>
-                  <td><ScoreBadge score={a.field?.latestClimaScore} /></td>
-                  <td>{a.status}</td>
-                  <td>${a.requestedAmount}</td>
-                  <td><button onClick={()=>openReview(a)}>Review</button></td>
+              {loading ? (
+                Array.from({length:5}).map((_,i)=>(
+                  <tr key={i} className="border-t border-slate-800 animate-pulse">
+                    <td className="px-4 py-3" colSpan={7}>
+                      <div className="h-4 w-1/3 bg-slate-800 rounded" />
+                    </td>
+                  </tr>
+                ))
+              ) : paginated.map(a => (
+                <tr key={a._id} className="border-t border-slate-800">
+                  <td className="px-4 py-2 text-slate-200">{a.farmer?.firstName} {a.farmer?.lastName}</td>
+                  <td className="px-4 py-2 text-slate-300">{a.field?.name}</td>
+                  <td className="px-4 py-2 text-slate-300">{a.crop}</td>
+                  <td className="px-4 py-2"><ScoreBadge score={a.field?.latestClimaScore} /></td>
+                  <td className="px-4 py-2"><StatusBadge status={a.status} /></td>
+                  <td className="px-4 py-2 text-slate-300">${a.requestedAmount}</td>
+                  <td className="px-4 py-2"><button className="inline-flex items-center rounded-md border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/15 text-blue-200 px-3 py-1.5" onClick={()=>openReview(a)}>Review</button></td>
                 </tr>
               ))}
-              {!filtered.length && (
-                <tr><td colSpan={7} className="muted">No applications match these filters.</td></tr>
+              {!loading && !filtered.length && (
+                <tr><td colSpan={7} className="px-4 py-4 text-slate-400">No applications match these filters.</td></tr>
               )}
             </tbody>
           </table>
+        </div>
+        <div className="flex items-center justify-between px-4 py-3 border-t border-slate-800">
+          <div className="text-slate-400 text-sm">Page {page} of {totalPages}</div>
+          <div className="flex gap-2">
+            <button disabled={page<=1} onClick={()=>setPage(p=>Math.max(1,p-1))} className="rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 px-3 py-1.5 text-sm">Prev</button>
+            <button disabled={page>=totalPages} onClick={()=>setPage(p=>Math.min(totalPages,p+1))} className="rounded-md border border-slate-700 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 px-3 py-1.5 text-sm">Next</button>
+          </div>
         </div>
       </div>
 
@@ -309,30 +339,33 @@ export default function LenderConsole() {
                 ))}
               </div>
               <div className="row" style={{marginTop:8}}>
-                <div className="col"><label>Decision</label>
-                  <select value={action.action} onChange={e=>setAction(prev=>({...prev, action: e.target.value}))}>
+                <div className="col">
+                  <label>Decision</label>
+                  <select className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" value={action.action} onChange={e=>setAction(prev=>({...prev, action: e.target.value}))}>
                     <option value="approve">Approve</option>
                     <option value="deny">Deny</option>
                     <option value="needs_info">Needs Info</option>
                   </select>
                 </div>
-                <div className="col"><label>Amount</label>
-                  <input type="number" value={action.amount} onChange={e=>setAction(prev=>({...prev, amount: e.target.value}))} />
+                <div className="col">
+                  <label>Amount</label>
+                  <input className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" type="number" value={action.amount} onChange={e=>setAction(prev=>({...prev, amount: e.target.value}))} placeholder={`e.g. ${selected.requestedAmount || ''}`} />
                 </div>
-                <div className="col"><label>Interest %</label>
-                  <input type="number" value={action.interestRate} onChange={e=>setAction(prev=>({...prev, interestRate: e.target.value}))} />
+                <div className="col">
+                  <label>Interest %</label>
+                  <input className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" type="number" value={action.interestRate} onChange={e=>setAction(prev=>({...prev, interestRate: e.target.value}))} />
                 </div>
               </div>
               <div className="row">
                 <div className="col">
                   <label>Comments</label>
-                  <input value={action.comments} onChange={e=>setAction(prev=>({...prev, comments: e.target.value}))} placeholder="Notes for farmer or internal log" />
+                  <input className="w-full rounded-md bg-slate-950/40 border border-slate-800 text-slate-200 text-sm p-2 outline-none focus:ring-2 focus:ring-blue-500/40" value={action.comments} onChange={e=>setAction(prev=>({...prev, comments: e.target.value}))} placeholder="Notes for farmer or internal log" />
                 </div>
               </div>
             </>
           )}
           <div className="row" style={{marginTop:8}}>
-            <div className="col end"><button>Submit Decision</button></div>
+            <div className="col end"><button className="inline-flex items-center rounded-md border border-emerald-500/40 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-100 text-sm px-3 py-1.5">Submit Decision</button></div>
           </div>
         </form>
       </dialog>
